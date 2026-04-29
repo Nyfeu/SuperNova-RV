@@ -1,0 +1,13 @@
+# Python
+.venv/
+__pycache__/
+
+# Build e Simulação (Verilator/Make)
+build/
+obj_dir/
+*.vcd
+
+# OS / Editor
+.DS_Store
+.vscode/
+!.vscode/settings.json

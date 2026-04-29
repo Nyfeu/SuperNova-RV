@@ -1,0 +1,24 @@
+{
+    "name": "SuperNova-RV Environment",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "editor.formatOnSave": true
+            },
+            "extensions": [
+                "mshr-h.VerilogHDL",          // Suporte a SystemVerilog
+                "ms-vscode.cpptools",         // Para os testbenches do Verilator em C++
+                "ms-vscode.makefile-tools",   // Para reconhecer nosso Makefile mestre
+                "ms-python.python",           // Para scripts auxiliares
+                "zhwu95.riscv"                // Syntax highlighting para RISC-V Assembly (útil para os testes de compliance)
+            ]
+        }
+    },
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+    "workspaceFolder": "/workspace",
+    "postCreateCommand": "python3 -m venv .venv && echo 'Ambiente SuperNova-RV pronto para síntese!'"
+}
