@@ -1,0 +1,25 @@
+site_name: SuperNova-RV
+site_description: "Custom RISC-V SoC & NPU Architecture"
+theme:
+  name: material
+  palette:
+    scheme: slate # Modo escuro por padrão
+    primary: teal
+  features:
+    - navigation.tabs
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Hardware:
+      - Arquitetura: hw/arquitetura.md
+      - Core (RV32I): hw/core.md
+  - Software:
+      - Toolchain: sw/toolchain.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.arithmatex: 
+      generic: true
