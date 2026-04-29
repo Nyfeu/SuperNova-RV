@@ -28,7 +28,7 @@ help:
 
 lint:
 	@echo "==> Executando Verible Linter no diretório de Hardware..."
-	@find $(HW_DIR) -name '*.sv' -o -name '*.v' | xargs $(LINTER) --lint_fatal
+	@find $(HW_DIR) -name '*.sv' -o -name '*.v' | xargs $(LINTER) --rules_config_search --lint_fatal
 
 clean:
 	@echo "==> Limpando o diretório de build..."

@@ -1,0 +1,18 @@
+# ==============================================================================
+# SuperNova-RV: Regras de Linting do SystemVerilog (Verible)
+# ==============================================================================
+
+# Força o uso de always_comb ao invés de always @*
++always-comb
+
+# Garante que todo 'case' tenha um 'default'
++case-missing-default
+
+# Força macros em ALL_CAPS
++macro-name-style
+
+# Força todos os sinais (wire, logic, reg) a usarem lower_snake_case
++signal-name-style
+
+# Força a boa prática de sufixos em portas (_i para input, _o para output)
++port-name-suffix
