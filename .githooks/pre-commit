@@ -1,0 +1,31 @@
+#!/bin/bash
+
+echo "============================================================"
+echo "🛡️  Iniciando CI Local (Pre-Commit Hook)"
+echo "============================================================"
+
+# 1. Executa o Linting (Verible)
+echo "==> Verificando qualidade do código RTL..."
+make lint
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ ERRO: O Verible Linter encontrou problemas de estilo/nomenclatura."
+  echo "Conserte os arquivos SystemVerilog, dê 'git add' novamente e tente o commit."
+  exit 1
+fi
+
+# 2. Executa os Testes Inteligentes (Verilator)
+echo ""
+echo "==> Verificando testbenches afetados..."
+python3 scripts/smart_test.py
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ ERRO: Um ou mais testes falharam na simulação local!"
+  echo "Corrija a lógica, dê 'git add' novamente e tente o commit."
+  exit 1
+fi
+
+echo "============================================================"
+echo "✅ CI Local aprovado! Criando o commit..."
+echo "============================================================"
+exit 0

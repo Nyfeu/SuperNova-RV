@@ -2,46 +2,56 @@
 # SuperNova-RV - Master Makefile
 # ==========================================
 
+# ==========================================
 # Variáveis de Diretórios
-HW_DIR   := hw
-TB_DIR   := tb
-SW_DIR   := sw
-DOCS_DIR := docs
-BUILD_DIR:= build
-
-# Ferramentas
-LINTER   := verible-verilog-lint
-SIMULATOR:= verilator
-
-VERILATOR = verilator
-VERILATOR_FLAGS = --cc --exe --build -Wall --trace
-V_INC_DIR = hw
+# ==========================================
+HW_DIR     := hw
+TB_DIR     := tb
+UNIT_DIR   := $(TB_DIR)/unit
+INT_DIR    := $(TB_DIR)/integration
+INC_DIR    := $(TB_DIR)/include
+BUILD_DIR  := build
+OBJ_DIR    := obj_dir
 
 # ==========================================
-# Alvos (Targets) Principais
+# Ferramentas e Flags
+# ==========================================
+LINTER     := verible-verilog-lint
+VERILATOR  := verilator
+
+# O '-y $(HW_DIR)' e '-I$(HW_DIR)' são a mágica da dependência. 
+# Se a ULA instanciar um Somador, o Verilator procura automaticamente somador.sv na pasta hw/
+VERILATOR_FLAGS := --cc --exe --build -Wall --trace -y $(HW_DIR) -I$(HW_DIR) -I$(INC_DIR)
+
+# ==========================================
+# Regras Dinâmicas de Simulação (Pattern Rules)
 # ==========================================
 
-.PHONY: all lint clean help
+# Regra para Testes de UNIDADE (ex: make test-unit-dummy)
+# O símbolo '%' funciona como um coringa (wildcard).
+test-unit-%: $(HW_DIR)/%.sv $(UNIT_DIR)/tb_%.cpp
+	@echo "==> [Unidade] Compilando módulo $* com Verilator..."
+	@export LC_ALL=C MAKEFLAGS="-s"; $(VERILATOR) $(VERILATOR_FLAGS) $^
+	@echo "==> [Unidade] Executando simulação de $*..."
+	@./$(OBJ_DIR)/V$*
 
-help:
-	@echo "Comandos disponíveis no SuperNova-RV:"
-	@echo "  make lint    - Roda o Verible para checar o estilo do SystemVerilog"
-	@echo "  make sim     - Compila o design com o Verilator (Em breve)"
-	@echo "  make docs    - Sobe o servidor local do MkDocs (Em breve)"
-	@echo "  make clean   - Remove todos os arquivos gerados no build"
+# Regra para Testes de INTEGRAÇÃO (ex: make test-int-datapath)
+test-int-%: $(HW_DIR)/%.sv $(INT_DIR)/tb_%.cpp
+	@echo "==> [Integração] Compilando módulo top-level $*..."
+	@export LC_ALL=C MAKEFLAGS="-s"; $(VERILATOR) $(VERILATOR_FLAGS) $^
+	@echo "==> [Integração] Executando simulação de $*..."
+	@./$(OBJ_DIR)/V$*
+
+# ==========================================
+# Targets Administrativos
+# ==========================================
+.PHONY: lint clean
 
 lint:
-	@echo "==> Executando Verible Linter no diretório de Hardware..."
+	@echo "==> Executando Verible Linter..."
 	@find $(HW_DIR) -name '*.sv' -o -name '*.v' | xargs $(LINTER) --rules_config_search --lint_fatal
 
 clean:
-	@echo "==> Limpando o diretório de build..."
-	@rm -rf $(BUILD_DIR)/*
+	@echo "==> Limpando artefatos..."
+	@rm -rf $(BUILD_DIR)/* $(OBJ_DIR) dump.vcd
 	@echo "Limpeza concluída."
-
-.PHONY: test-dummy
-test-dummy:
-	@echo "==> Compilando testbench dummy com Verilator..."
-	@export LC_ALL=C; $(VERILATOR) $(VERILATOR_FLAGS) -I$(V_INC_DIR) hw/dummy.sv tb/unit/tb_dummy.cpp > build.log 2>&1 || (echo "ERRO NA COMPILAÇÃO. Lendo build.log:" && cat build.log && exit 1)
-	@echo "==> Executando simulação..."
-	@./obj_dir/Vdummy

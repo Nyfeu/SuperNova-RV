@@ -3,9 +3,8 @@ import sys
 import os
 
 def get_changed_files():
-    """Obtém a lista de arquivos alterados no último commit ou PR."""
-    # Em um PR do GitHub, a base geralmente é origin/main
-    cmd = ["git", "diff", "--name-only", "origin/main...HEAD"]
+    """Obtém a lista de arquivos prontos para o commit (staged)."""
+    cmd = ["git", "diff", "--cached", "--name-only"]
     result = subprocess.run(cmd, capture_output=True, text=True)
     return result.stdout.strip().split('\n')
 
@@ -21,7 +20,10 @@ def map_rtl_to_testbench(changed_files):
             # Verifica se o testbench físico existe (ex: tb/unit/tb_dummy.cpp)
             # Se você tiver testes de integração, a lógica pode expandir aqui
             if os.path.exists(f"tb/unit/tb_{base_name}.cpp"):
-                targets_to_run.add(f"test-{base_name}")
+                targets_to_run.add(f"test-unit-{base_name}")
+            
+            if os.path.exists(f"tb/integration/tb_{base_name}.cpp"):
+                targets_to_run.add(f"test-int-{base_name}")
                 
         # Se mexer em um arquivo de interface ou globais, roda TODOS os testes de integração
         elif file.startswith('hw/interfaces/'):
