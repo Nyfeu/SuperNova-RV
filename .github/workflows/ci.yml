@@ -19,8 +19,7 @@ jobs:
 
       - name: Instalar Verible
         run: |
-          # Busca dinamicamente a última versão compilada para Ubuntu/Linux
-          wget $(curl -s https://api.github.com/repos/chipsalliance/verible/releases/latest | grep browser_download_url | grep Ubuntu | cut -d '"' -f 4) -O verible.tar.gz
+          wget $(curl -s https://api.github.com/repos/chipsalliance/verible/releases/latest | grep browser_download_url | grep linux-static-x86_64.tar.gz | cut -d '"' -f 4) -O verible.tar.gz
           tar -xzf verible.tar.gz
           sudo cp verible-*/bin/* /usr/local/bin/
 
