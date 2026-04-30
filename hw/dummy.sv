@@ -1,16 +1,16 @@
 `default_nettype none
 
 module dummy (
-    input  wire logic        clk,
-    input  wire logic        rst_n,
-    input  wire logic [31:0] data_in,
-    output logic      [31:0] data_out
+    input  wire logic        clk_i,
+    input  wire logic        rst_ni,
+    input  wire logic [31:0] data_i,
+    output logic      [31:0] data_o
 );
-  always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-      data_out <= 32'd0;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      data_o <= 32'd0;
     end else begin
-      data_out <= ~data_in;  // Inversão simples para teste
+      data_o <= ~data_i;
     end
   end
 endmodule
