@@ -1,31 +1,24 @@
 #!/bin/bash
 
-echo "============================================================"
-echo "🛡️  Iniciando CI Local (Pre-Commit Hook)"
-echo "============================================================"
+# ANSI color codes
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+BLUE='\033[1;34m'
+NC='\033[0m' # No Color
 
-# 1. Executa o Linting (Verible)
-echo "==> Verificando qualidade do código RTL..."
-make lint
-if [ $? -ne 0 ]; then
-  echo ""
-  echo "❌ ERRO: O Verible Linter encontrou problemas de estilo/nomenclatura."
-  echo "Conserte os arquivos SystemVerilog, dê 'git add' novamente e tente o commit."
+echo -e "${BLUE}▶ Starting Local CI...${NC}"
+
+# 1. Linting
+if ! make lint; then
+  echo -e "\n${RED}✗ Linting Failed.${NC} Fix the style errors above and try again."
   exit 1
 fi
 
-# 2. Executa os Testes Inteligentes (Verilator)
-echo ""
-echo "==> Verificando testbenches afetados..."
-python3 scripts/smart_test.py
-if [ $? -ne 0 ]; then
-  echo ""
-  echo "❌ ERRO: Um ou mais testes falharam na simulação local!"
-  echo "Corrija a lógica, dê 'git add' novamente e tente o commit."
+# 2. Tests
+if ! python3 scripts/smart_test.py; then
+  echo -e "\n${RED}✗ Tests Failed.${NC} Check the simulations and try again."
   exit 1
 fi
 
-echo "============================================================"
-echo "✅ CI Local aprovado! Criando o commit..."
-echo "============================================================"
+echo -e "${GREEN}✓ All checks passed.${NC}"
 exit 0
