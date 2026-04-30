@@ -13,7 +13,9 @@ int main(int argc, char **argv)
     auto trace = std::make_unique<VerilatedVcdC>();
 
     dut->trace(trace.get(), 99);
-    trace->open("dump.vcd");
+
+    // MUDANÇA AQUI: Apontando o VCD para a pasta build
+    trace->open("build/dump_dummy.vcd");
 
     // Condições Iniciais com os novos nomes (_i, _ni)
     dut->clk_i = 0;
@@ -38,7 +40,7 @@ int main(int argc, char **argv)
     }
 
     trace->close();
-    std::cout << "Simulação Dummy concluída. Arquivo dump.vcd gerado." << std::endl;
+    std::cout << "Simulação Dummy concluída. Arquivo dump_dummy.vcd gerado em build/." << std::endl;
 
     return 0;
 }
