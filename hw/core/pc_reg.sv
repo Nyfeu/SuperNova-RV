@@ -1,7 +1,7 @@
 
 
 /*
-    
+
     PROJECT: RISC-V CPU Core
 
     MODULE: Program Counter Register (pc_reg)
@@ -45,7 +45,7 @@ module pc_reg #(
     // Entrada direta do próximo PC (calculado pelo Datapath, igual ao seu VHDL)
     input wire logic [31:0] pc_next_i,
 
-    // Saída do PC atual 
+    // Saída do PC atual
     output logic [31:0] pc_o
 );
 
