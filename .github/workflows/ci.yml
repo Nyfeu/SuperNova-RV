@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Instalar Verible
         run: |
@@ -50,7 +50,7 @@ jobs:
     
     steps:
       - name: Checkout do código (com histórico completo para o diff)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0 # Necessário para o git diff funcionar corretamente
 
