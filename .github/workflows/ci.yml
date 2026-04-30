@@ -3,18 +3,8 @@ name: SuperNova-RV CI Pipeline
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - 'hw/**'       
-      - 'tb/**'       
-      - 'scripts/**'  
-      - 'makefile'
   pull_request:
     branches: [ "main" ]
-    paths:
-      - 'hw/**'
-      - 'tb/**'
-      - 'scripts/**'
-      - 'makefile'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -28,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Instalar Verible
         run: |
@@ -50,7 +40,7 @@ jobs:
     
     steps:
       - name: Checkout do código (com histórico completo para o diff)
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Necessário para o git diff funcionar corretamente
 
