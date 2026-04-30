@@ -3,8 +3,18 @@ import sys
 import os
 
 def get_changed_files():
-    """Obtém a lista de arquivos prontos para o commit (staged)."""
-    cmd = ["git", "diff", "--cached", "--name-only"]
+    """Obtém a lista de arquivos alterados, adaptando-se ao ambiente (Local vs CI)."""
+    
+    # Verifica se estamos rodando dentro do GitHub Actions
+    is_ci = os.environ.get('GITHUB_ACTIONS') == 'true'
+    
+    if is_ci:
+        # No CI, comparamos o commit atual (HEAD) com o anterior (HEAD~1)
+        cmd = ["git", "diff", "--name-only", "HEAD~1", "HEAD"]
+    else:
+        # Localmente, continuamos olhando o que está no 'stage' (git add)
+        cmd = ["git", "diff", "--cached", "--name-only"]
+        
     result = subprocess.run(cmd, capture_output=True, text=True)
     return result.stdout.strip().split('\n')
 
