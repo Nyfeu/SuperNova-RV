@@ -13,6 +13,10 @@ BUILD_DIR:= build
 LINTER   := verible-verilog-lint
 SIMULATOR:= verilator
 
+VERILATOR = verilator
+VERILATOR_FLAGS = --cc --exe --build -Wall --trace
+V_INC_DIR = hw
+
 # ==========================================
 # Alvos (Targets) Principais
 # ==========================================
@@ -34,3 +38,10 @@ clean:
 	@echo "==> Limpando o diretório de build..."
 	@rm -rf $(BUILD_DIR)/*
 	@echo "Limpeza concluída."
+
+.PHONY: test-dummy
+test-dummy:
+	@echo "==> Compilando testbench dummy com Verilator..."
+	@export LC_ALL=C; $(VERILATOR) $(VERILATOR_FLAGS) -I$(V_INC_DIR) hw/dummy.sv tb/unit/tb_dummy.cpp > build.log 2>&1 || (echo "ERRO NA COMPILAÇÃO. Lendo build.log:" && cat build.log && exit 1)
+	@echo "==> Executando simulação..."
+	@./obj_dir/Vdummy

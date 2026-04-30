@@ -11,3 +11,8 @@ obj_dir/
 .DS_Store
 .vscode/
 !.vscode/settings.json
+
+# Verilator / Build artefacts
+obj_dir/
+build.log
+dump.vcd
