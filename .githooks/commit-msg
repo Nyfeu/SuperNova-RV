@@ -1,0 +1,21 @@
+#!/bin/bash
+
+MSG_FILE=$1
+REGEX="^(feat|fix|docs|style|refactor|perf|test|chore|ci|build)(\(.+\))?: .+"
+COMMIT_MSG=$(head -n1 "$MSG_FILE")
+
+if ! [[ "$COMMIT_MSG" =~ $REGEX ]]; then
+  echo "============================================================"
+  echo "❌  ERROR: Invalid commit message format!"
+  echo "============================================================"
+  echo "Your message: '$COMMIT_MSG'"
+  echo "This project follows Conventional Commits."
+  echo "Valid types: feat, fix, docs, style, refactor, perf, test, chore, ci, build."
+  echo ""
+  echo "Valid examples:"
+  echo "  feat: implement instruction decoder"
+  echo "  fix(alu): fix overflow signal bug"
+  echo "  docs: update block diagram in mkdocs"
+  echo "============================================================"
+  exit 1
+fi
