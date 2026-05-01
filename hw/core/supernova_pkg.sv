@@ -5,7 +5,7 @@
     DESCRIPTION: Global package containing type definitions, enums, and constants shared across the entire processor architecture.
 
     AUTHOR: André Solano Ferreira Rodrigues Maiolini
-    DATE: 2026-04-30
+    DATE: 2026-05-01
 
 */
 
@@ -28,5 +28,26 @@ package supernova_pkg;
     AluAnd  = 4'b0111
 
   } alu_op_e;
+
+  // Definition of Immediate formats using strong typing (enum)
+  // Names in PascalCase to follow Verible Linter rules
+
+  typedef enum logic [2:0] {
+
+    ImmI = 3'b000,
+    ImmS = 3'b001,
+    ImmB = 3'b010,
+    ImmU = 3'b011,
+    ImmJ = 3'b100
+
+  } imm_type_e;
+
+  // Definition of Memory Access Sizes
+
+  typedef enum logic [1:0] {
+    MemSizeByte = 2'b00,  // lb, lbu, sb
+    MemSizeHalf = 2'b01,  // lh, lhu, sh
+    MemSizeWord = 2'b10   // lw, sw
+  } mem_size_e;
 
 endpackage
