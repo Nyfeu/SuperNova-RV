@@ -31,3 +31,25 @@ targets:
     - hw/core/lsu.sv
     - tb/unit/tb_lsu.cpp
     - hw/core/supernova_pkg.sv
+
+  branch_unit:
+    - hw/core/branch_unit.sv
+    - tb/unit/tb_branch_unit.cpp
+  
+  decode_stage:
+    - hw/core/decode_stage.sv
+    - tb/unit/tb_decode_stage.cpp
+    - hw/core/reg_file.sv
+    - hw/core/imm_gen.sv
+    - hw/core/supernova_pkg.sv
+
+  execute_stage:
+    - hw/core/execute_stage.sv
+    - tb/unit/tb_execute_stage.cpp
+    - hw/core/alu.sv
+    - hw/core/supernova_pkg.sv
+
+  instr_decoder:
+    - hw/core/instr_decoder.sv
+    - tb/unit/tb_instr_decoder.cpp
+    - hw/core/supernova_pkg.sv
