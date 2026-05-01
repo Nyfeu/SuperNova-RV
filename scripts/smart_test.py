@@ -69,18 +69,20 @@ def main():
         
     print(f"==> Alvos identificados para teste: {', '.join(targets_to_run)}")
     
-    # 3. Executa os testes mapeados
+    # 3. Execute identified tests
     for target in targets_to_run:
-        # Assumimos que o YAML guarda o nome base (ex: 'alu'). Montamos o comando do make.
-        cmd = f"make test-unit-{target}"
-        print(f"\n--- Executando {cmd} ---")
+        # Determine if it's a unit or integration test based on file location
+        # We search for the test file associated with this target in the YAML list
+        is_integration = any("tb/integration/" in f for f in targets_dict[target])
         
-        # subprocess.run com shell=True permite executar o comando em formato de string
+        make_cmd = "test-int" if is_integration else "test-unit"
+        cmd = f"make {make_cmd}-{target}"
+        
+        print(f"\n--- Executing {cmd} ---")
         result = subprocess.run(cmd, shell=True)
         
-        # Se um teste falhar, quebra o CI imediatamente
         if result.returncode != 0:
-            print(f"\n❌ Falha no teste: {target}")
+            print(f"\n❌ Test failed: {target}")
             return 1
             
     print("\n✅ Todos os testes condicionais passaram!")

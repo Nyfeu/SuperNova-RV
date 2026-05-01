@@ -3,8 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/build",
+                "${workspaceFolder}/tb/include",
+                "${workspaceFolder}/build/gen/**",
                 "/usr/share/verilator/include",
                 "/usr/share/verilator/include/vltstd"
             ],

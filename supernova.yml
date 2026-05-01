@@ -19,7 +19,7 @@ targets:
 
   fetch_stage:
     - hw/core/fetch_stage.sv
-    - tb/unit/tb_fetch_stage.cpp
+    - tb/integration/tb_fetch_stage.cpp
     - hw/core/pc_reg.sv
     - hw/core/supernova_pkg.sv
     - tb/include/testbench.hpp
@@ -40,18 +40,10 @@ targets:
     - hw/core/branch_unit.sv
     - tb/unit/tb_branch_unit.cpp
     - tb/include/testbench.hpp
-  
-  decode_stage:
-    - hw/core/decode_stage.sv
-    - tb/unit/tb_decode_stage.cpp
-    - hw/core/reg_file.sv
-    - hw/core/imm_gen.sv
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
 
   execute_stage:
     - hw/core/execute_stage.sv
-    - tb/unit/tb_execute_stage.cpp
+    - tb/integration/tb_execute_stage.cpp
     - hw/core/alu.sv
     - hw/core/supernova_pkg.sv
     - tb/include/testbench.hpp
@@ -64,7 +56,7 @@ targets:
 
   decode_stage:
     - hw/core/decode_stage.sv
-    - tb/unit/tb_decode_stage.cpp
+    - tb/integration/tb_decode_stage.cpp
     - hw/core/reg_file.sv
     - hw/core/imm_gen.sv
     - hw/core/supernova_pkg.sv
@@ -72,27 +64,27 @@ targets:
 
   execute_stage:
     - hw/core/execute_stage.sv
-    - tb/unit/tb_execute_stage.cpp
+    - tb/integration/tb_execute_stage.cpp
     - hw/core/alu.sv
     - hw/core/supernova_pkg.sv
     - tb/include/testbench.hpp
 
   memory_stage:
     - hw/core/memory_stage.sv
-    - tb/unit/tb_memory_stage.cpp
+    - tb/integration/tb_memory_stage.cpp
     - hw/core/lsu.sv
     - hw/core/supernova_pkg.sv
     - tb/include/testbench.hpp
 
   writeback_stage:
     - hw/core/writeback_stage.sv
-    - tb/unit/tb_writeback_stage.cpp
+    - tb/integration/tb_writeback_stage.cpp
     - hw/core/supernova_pkg.sv
     - tb/include/testbench.hpp
 
   datapath:
     - hw/core/datapath.sv
-    - tb/unit/tb_datapath.cpp
+    - tb/integration/tb_datapath.cpp
     - hw/core/fetch_stage.sv
     - hw/core/decode_stage.sv
     - hw/core/execute_stage.sv
@@ -103,7 +95,7 @@ targets:
 
   controlpath:
     - hw/core/controlpath.sv
-    - tb/unit/tb_controlpath.cpp
+    - tb/integration/tb_controlpath.cpp
     - hw/core/supernova_pkg.sv
     - tb/include/testbench.hpp
     - hw/core/branch_unit.sv
@@ -112,7 +104,7 @@ targets:
   
   top_level:
     - hw/core/top_level.sv
-    - tb/unit/tb_top_level.cpp
+    - tb/integration/tb_top_level.cpp
     - hw/core/fetch_stage.sv
     - hw/core/decode_stage.sv
     - hw/core/execute_stage.sv

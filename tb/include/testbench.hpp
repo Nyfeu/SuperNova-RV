@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <filesystem>
 
 // Macro de verificação de igualdade com mensagens de erro detalhadas
 #define CHECK_EQ(expected, actual, msg)                                                                                 \
@@ -38,9 +39,15 @@ public:
         Verilated::traceEverOn(true);
         if (!vcd_name.empty())
         {
+            // Cria a pasta traces/ caso ela não exista
+            std::filesystem::create_directories("traces");
+
+            // Força o caminho para dentro de traces/
+            std::string vcd_path = "traces/" + vcd_name;
+
             trace = std::make_unique<VerilatedVcdC>();
             dut->trace(trace.get(), 99);
-            trace->open(vcd_name.c_str());
+            trace->open(vcd_path.c_str());
         }
     }
 
