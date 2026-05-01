@@ -67,9 +67,9 @@ inst_6:
 TEST_JALR_OP(x15, x30, x12, 0x10, x10, 24,0)
 
 inst_7:
-// rs1==x31, rd==x0, imm_val == 32, 
-// opcode: jalr; op1:x31; dest:x0; immval:0x20; align:0 
-TEST_JALR_OP(x15, x0, x31, 0x20, x10, 28,0)
+// rs1==x31, rd==x1, imm_val == 32, 
+// opcode: jalr; op1:x31; dest:x1; immval:0x20; align:0 
+TEST_JALR_OP(x15, x1, x31, 0x20, x10, 28,0)
 
 inst_8:
 // rs1==x20, rd==x3, imm_val == 128, 

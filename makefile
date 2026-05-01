@@ -117,15 +117,11 @@ test-app-%: $(PKG_FILES) top_level.sv tb/e2e/tb_e2e_rv32i.cpp | sw-compile-app-%
 SW_COMPLIANCE_FLAGS := -march=rv32i -mabi=ilp32 -nostdlib -DXLEN=32 -DTEST_CASE_1=1 -T sw/compliance/target/compliance.ld
 
 sw-compile-compliance-%: prepare
-	@echo "==> [Software] Patching Environment and Compiling: $*..."
-	@mkdir -p $(GEN_DIR)/patched_sw
-	@cp -r sw/compliance/riscv-arch-test/riscv-test-suite/env/* $(GEN_DIR)/patched_sw/
-	@cp -r sw/compliance/target/* $(GEN_DIR)/patched_sw/
-	@find $(GEN_DIR)/patched_sw/ -type f -exec sed -i 's/la[[:space:]]\{1,\}x0[[:space:]]*,/la t0,/g' {} +
+	@echo "==> [Software] Compiling Compliance Test: $*..."
 	@$(RISCV_GCC) $(SW_COMPLIANCE_FLAGS) \
-		-I $(GEN_DIR)/patched_sw \
+		-I sw/compliance/env \
 		-I sw/compliance/target \
-		sw/compliance/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/$*.S \
+		sw/compliance/rv32i_m/I/src/$*.S \
 		-o $(BIN_DIR)/$*.elf
 	@$(RISCV_OBJCOPY) -O verilog --verilog-data-width 4 $(BIN_DIR)/$*.elf $(BIN_DIR)/$*.hex
 
@@ -147,9 +143,8 @@ test-compliance-%: $(PKG_FILES) top_level.sv tb/e2e/tb_e2e_rv32i.cpp | sw-compil
 	@diff -q $(TRACES_DIR)/$*.signature $(TRACES_DIR)/$*.reference_output > /dev/null && echo "✅ Assinatura 100% Compatível!\n" || (echo "❌ ERRO: O Hardware calculou algo diferente do Spike!\n" && exit 1)
 
 # Captura todos os arquivos .S na pasta de testes do RISC-V e extrai apenas o nome do teste
-COMPLIANCE_SRCS := $(wildcard sw/compliance/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/*.S)
-COMPLIANCE_TESTS := $(patsubst sw/compliance/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/%.S, %, $(COMPLIANCE_SRCS))
-# COMPLIANCE_TESTS := $(filter-out jalr-01, $(patsubst sw/compliance/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/%.S, %, $(COMPLIANCE_SRCS)))
+COMPLIANCE_SRCS := $(wildcard sw/compliance/rv32i_m/I/src/*.S)
+COMPLIANCE_TESTS := $(patsubst sw/compliance/rv32i_m/I/src/%.S, %, $(COMPLIANCE_SRCS))
 
 # Cria uma regra que depende de todos os test-compliance-[nome]
 .PHONY: test-compliance-all
