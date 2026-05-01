@@ -1,9 +1,50 @@
 [1m[36m
-==> SuperNova-RV E2E Verification Engine[0m
+==> SuperNova-RV E2E ISA Verification Engine[0m
 --- Loading Binary: build/bin/rv32i_test.hex
+--- Trace Mode: ENABLED
 --- Memory Map: 46 Words Loaded
 
-[1m[36m.[0m[1m[37m
+[Cycle    0] PC: 0x00000000 | IR: 0x0040006f
+[Cycle    1] PC: 0x00000004 | IR: 0x06400093
+[Cycle    2] PC: 0x00000008 | IR: 0x03200113
+[Cycle    3] PC: 0x0000000c | IR: 0x002081b3
+[Cycle    4] PC: 0x00000010 | IR: 0x40118233
+[Cycle    5] PC: 0x00000014 | IR: 0x03200293
+[Cycle    6] PC: 0x00000018 | IR: 0x08521663
+[Cycle    7] PC: 0x0000001c | IR: 0xfff00093
+[Cycle    8] PC: 0x00000020 | IR: 0x0ff0f113
+[Cycle    9] PC: 0x00000024 | IR: 0x000013b7
+[Cycle   10] PC: 0x00000028 | IR: 0xf0038393
+[Cycle   11] PC: 0x0000002c | IR: 0x007161b3
+[Cycle   12] PC: 0x00000030 | IR: 0x00001237
+[Cycle   13] PC: 0x00000034 | IR: 0xfff20213
+[Cycle   14] PC: 0x00000038 | IR: 0x06419663
+[Cycle   15] PC: 0x0000003c | IR: 0x00100093
+[Cycle   16] PC: 0x00000040 | IR: 0x00409093
+[Cycle   17] PC: 0x00000044 | IR: 0x0020d113
+[Cycle   18] PC: 0x00000048 | IR: 0xff000193
+[Cycle   19] PC: 0x0000004c | IR: 0x4021d213
+[Cycle   20] PC: 0x00000050 | IR: 0xffc00293
+[Cycle   21] PC: 0x00000054 | IR: 0x04521863
+[Cycle   22] PC: 0x00000058 | IR: 0xfff00093
+[Cycle   23] PC: 0x0000005c | IR: 0x0010a113
+[Cycle   24] PC: 0x00000060 | IR: 0x0010b193
+[Cycle   25] PC: 0x00000064 | IR: 0x00111463
+[Cycle   26] PC: 0x0000006c | IR: 0x02019c63
+[Cycle   27] PC: 0x00000070 | IR: 0x04000093
+[Cycle   28] PC: 0x00000074 | IR: 0x4d200113
+[Cycle   29] PC: 0x00000078 | IR: 0x0020a023
+[Cycle   30] PC: 0x0000007c | IR: 0x0000a183
+[Cycle   31] PC: 0x00000080 | IR: 0x02219263
+[Cycle   32] PC: 0x00000084 | IR: 0x123450b7
+[Cycle   33] PC: 0x00000088 | IR: 0x12345137
+[Cycle   34] PC: 0x0000008c | IR: 0x00209c63
+[Cycle   35] PC: 0x00000090 | IR: 0x10000537
+[Cycle   36] PC: 0x00000094 | IR: 0xdeadc5b7
+[Cycle   37] PC: 0x00000098 | IR: 0xeef58593
+[Cycle   38] PC: 0x0000009c | IR: 0x00b52023
+[1m[37m
 >>> SUCCESS AT CYCLE 38[0m
-[1m[36m✅ E2E Compliance: PASSED[0m
+[1m[36m
+✅ E2E ISA TEST: PASSED[0m
 
