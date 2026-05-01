@@ -5,7 +5,7 @@
     DESCRIPTION: Global package containing type definitions, enums, and constants shared across the entire processor architecture.
 
     AUTHOR: André Solano Ferreira Rodrigues Maiolini
-    DATE: 2026-05-01
+    DATE:   2026-05-01
 
 */
 
