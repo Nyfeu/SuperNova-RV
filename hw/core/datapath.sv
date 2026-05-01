@@ -62,7 +62,9 @@ module datapath #(
     // ----------------------------------------------------
     // Decoder Interface (Exports to external Control Unit)
     // ----------------------------------------------------
-    output logic [31:0] instr_o
+    output logic [6:0] opcode_o,
+    output logic [2:0] funct3_o,
+    output logic       funct7_5_o
 );
 
   import supernova_pkg::*;
@@ -97,8 +99,10 @@ module datapath #(
   // ROUTING LOGIC
   // ========================================================
 
-  // Exportar a instrução completa para a Unidade de Controle externa
-  assign instr_o = instr;
+  // Fatiamento e exportação dos sinais de controle para o Controlpath
+  assign opcode_o = instr[6:0];
+  assign funct3_o = instr[14:12];
+  assign funct7_5_o = instr[30];
 
   // Multiplexador para escolher o endereço do salto (JALR vs Branch/JAL)
   assign branch_target = jalr_sel_i ? jalr_addr : target_addr;
