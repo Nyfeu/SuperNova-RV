@@ -1,10 +1,12 @@
 /*
+
     PROJECT: SuperNova-RV
     MODULE: SuperNova Package (supernova_pkg)
     DESCRIPTION: Global package containing type definitions, enums, and constants shared across the entire processor architecture.
 
     AUTHOR: André Solano Ferreira Rodrigues Maiolini
     DATE: 2026-04-30
+
 */
 
 package supernova_pkg;
