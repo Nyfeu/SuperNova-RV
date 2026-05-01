@@ -58,6 +58,9 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Configurar permissões do Git no Container
+      run: git config --global --add safe.directory '*' 
+
     - name: Garantir Python
       run: |
         apt-get update
