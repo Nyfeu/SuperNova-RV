@@ -73,6 +73,37 @@ test-int-%: $(PKG_FILES) %.sv $(INT_DIR)/tb_%.cpp | prepare
 	@./$(BIN_DIR)/V$*
 
 # ==========================================
+# RISC-V Software Toolchain
+# ==========================================
+RISCV_PREFIX := riscv64-unknown-elf-
+RISCV_GCC    := $(RISCV_PREFIX)gcc
+RISCV_LD     := $(RISCV_PREFIX)ld
+RISCV_OBJCOPY:= $(RISCV_PREFIX)objcopy
+
+# Flags para RV32I (Note que usamos o prefixo para forçar 32-bits)
+SW_FLAGS     := -march=rv32i -mabi=ilp32 -nostdlib -T sw/boot/link.ld
+
+# Regra para gerar o HEX a partir de um Assembly ou C
+sw-compile-%: prepare
+	@echo "==> [Software] Compiling $*..."
+	@$(RISCV_GCC) $(SW_FLAGS) sw/boot/crt0.S sw/tests/$*.S -o $(BIN_DIR)/$*.elf
+	@$(RISCV_OBJCOPY) -O verilog --verilog-data-width 4 $(BIN_DIR)/$*.elf $(BIN_DIR)/$*.hex
+	@echo "==> [Software] HEX file generated at $(BIN_DIR)/$*.hex"
+
+# Regra E2E Completa
+test-e2e-%: $(PKG_FILES) top_level.sv tb/e2e/tb_e2e_rv32i.cpp | sw-compile-% prepare
+	@echo " "
+	@echo "==> [E2E] Verilating and building top_level for E2E..."
+	@export LC_ALL=C MAKEFLAGS="-s"; \
+	$(VERILATOR) $(VERILATOR_FLAGS) --top-module top_level \
+	--Mdir $(GEN_DIR)/top_level_e2e -o ../../bin/Vtop_level_e2e \
+	$(foreach f,$^,$(abspath $(f)))
+	@echo " "
+	@echo "==> [E2E] Running full hardware-software simulation..."
+	@./$(BIN_DIR)/Vtop_level_e2e $(BIN_DIR)/$*.hex 2>&1 | tee $(TRACES_DIR)/$*.log
+	@grep -q "SUCCESS" $(TRACES_DIR)/$*.log && echo "✅ Test Passed!" || exit 1
+
+# ==========================================
 # Targets Administrativos
 # ==========================================
 .PHONY: lint clean

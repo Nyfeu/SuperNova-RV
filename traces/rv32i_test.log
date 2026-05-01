@@ -1,0 +1,9 @@
+[1m[36m
+==> SuperNova-RV E2E Verification Engine[0m
+--- Loading Binary: build/bin/rv32i_test.hex
+--- Memory Map: 46 Words Loaded
+
+[1m[36m.[0m[1m[37m
+>>> SUCCESS AT CYCLE 38[0m
+[1m[36m✅ E2E Compliance: PASSED[0m
+
