@@ -100,3 +100,28 @@ targets:
     - hw/core/writeback_stage.sv
     - hw/core/supernova_pkg.sv
     - tb/include/testbench.hpp
+
+  controlpath:
+    - hw/core/controlpath.sv
+    - tb/unit/tb_controlpath.cpp
+    - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
+    - hw/core/branch_unit.sv
+    - hw/code/instr_decoder.sv
+    - tb/include/testbench.hpp
+  
+  top_level:
+    - hw/core/top_level.sv
+    - tb/unit/tb_top_level.cpp
+    - hw/core/fetch_stage.sv
+    - hw/core/decode_stage.sv
+    - hw/core/execute_stage.sv
+    - hw/core/memory_stage.sv
+    - hw/core/writeback_stage.sv
+    - hw/core/controlpath.sv
+    - hw/core/lsu.sv
+    - hw/core/alu.sv
+    - hw/core/reg_file.sv
+    - hw/core/imm_gen.sv
+    - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
