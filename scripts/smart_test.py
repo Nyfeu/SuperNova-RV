@@ -1,6 +1,10 @@
+#!/usr/bin/env python3
 import subprocess
 import sys
 import os
+import yaml
+
+CONFIG_FILE = "supernova.yml"
 
 def get_changed_files():
     """Obtém a lista de arquivos alterados, adaptando-se ao ambiente (Local vs CI)."""
@@ -16,52 +20,59 @@ def get_changed_files():
         cmd = ["git", "diff", "--cached", "--name-only"]
         
     result = subprocess.run(cmd, capture_output=True, text=True)
-    return result.stdout.strip().split('\n')
+    # Filtra strings vazias caso não haja alterações
+    return [f for f in result.stdout.strip().split('\n') if f]
 
-def map_rtl_to_testbench(changed_files):
-    """Mapeia arquivos de hardware (hw/X.sv) para alvos do makefile (test-X)."""
-    targets_to_run = set()
-    
-    for file in changed_files:
-        if file.startswith('hw/') and file.endswith('.sv'):
-            # Extrai o nome do módulo (ex: de 'hw/dummy.sv' tira 'dummy')
-            base_name = os.path.basename(file).replace('.sv', '')
-            
-            # Verifica se o testbench físico existe (ex: tb/unit/tb_dummy.cpp)
-            # Se você tiver testes de integração, a lógica pode expandir aqui
-            if os.path.exists(f"tb/unit/tb_{base_name}.cpp"):
-                targets_to_run.add(f"test-unit-{base_name}")
-            
-            if os.path.exists(f"tb/integration/tb_{base_name}.cpp"):
-                targets_to_run.add(f"test-int-{base_name}")
-                
-        # Se mexer em um arquivo de interface ou globais, roda TODOS os testes de integração
-        elif file.startswith('hw/interfaces/'):
-            targets_to_run.add("test-integration-all")
-            
-    return list(targets_to_run)
-
-if __name__ == "__main__":
+def main():
     print("==> Analisando modificações do Git...")
-    changed = get_changed_files()
+    changed_files = get_changed_files()
     
-    targets = map_rtl_to_testbench(changed)
-    
-    if not targets:
-        print("==> Nenhuma alteração de RTL com testbench mapeado detectada. Pulando testes.")
-        sys.exit(0)
+    if not changed_files:
+        print("==> Nenhuma alteração detectada. Pulando testes.")
+        return 0
+
+    # 1. Carrega a matriz de dependências do arquivo YAML
+    try:
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+    except FileNotFoundError:
+        print(f"❌ Erro fatal: O arquivo '{CONFIG_FILE}' não foi encontrado na raiz do projeto.")
+        return 1
+    except yaml.YAMLError as exc:
+        print(f"❌ Erro de sintaxe no YAML: {exc}")
+        return 1
+
+    targets_dict = config.get("targets", {})
+    targets_to_run = set()
+
+    # 2. Cruza os arquivos alterados com a matriz do YAML
+    for changed_file in changed_files:
+        for target_name, dependencies in targets_dict.items():
+            if changed_file in dependencies:
+                targets_to_run.add(target_name)
+
+    if not targets_to_run:
+        print("==> As alterações não afetam nenhum módulo mapeado no YAML. Pulando testes.")
+        return 0
         
-    print(f"==> Alvos identificados para teste: {', '.join(targets)}")
+    print(f"==> Alvos identificados para teste: {', '.join(targets_to_run)}")
     
-    # Executa os testes mapeados
-    for target in targets:
-        print(f"\n--- Executando {target} ---")
-        # Roda o comando make para o target específico
-        result = subprocess.run(["make", target])
+    # 3. Executa os testes mapeados
+    for target in targets_to_run:
+        # Assumimos que o YAML guarda o nome base (ex: 'alu'). Montamos o comando do make.
+        cmd = f"make test-unit-{target}"
+        print(f"\n--- Executando {cmd} ---")
+        
+        # subprocess.run com shell=True permite executar o comando em formato de string
+        result = subprocess.run(cmd, shell=True)
         
         # Se um teste falhar, quebra o CI imediatamente
         if result.returncode != 0:
-            print(f"❌ Falha no teste: {target}")
-            sys.exit(1)
+            print(f"\n❌ Falha no teste: {target}")
+            return 1
             
-    print("✅ Todos os testes condicionais passaram!")
+    print("\n✅ Todos os testes condicionais passaram!")
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())
