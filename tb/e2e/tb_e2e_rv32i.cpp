@@ -26,7 +26,13 @@ int main(int argc, char **argv)
 {
     if (argc < 2)
     {
-        std::cerr << "Uso: " << argv[0] << " <caminho_para_arquivo.hex> [--isa | --app | --compliance] [--trace]\n";
+        std::cerr << "Uso: " << argv[0] << " <caminho_para_arquivo.hex> [flags...]\n";
+        std::cerr << "Flags suportadas:\n";
+        std::cerr << "  --isa | --app | --compliance\n";
+        std::cerr << "  --trace\n";
+        std::cerr << "  --sig-start <addr_hex>\n";
+        std::cerr << "  --sig-end <addr_hex>\n";
+        std::cerr << "  --sig-file <caminho_saida>\n";
         return 1;
     }
 
@@ -34,7 +40,12 @@ int main(int argc, char **argv)
     std::string test_mode = "ISA"; // Padrão
     bool trace_mode = false;
 
-    // Verifica os argumentos passados por linha de comando
+    // Variáveis para extração de Assinatura (Compliance)
+    uint32_t sig_start = 0;
+    uint32_t sig_end = 0;
+    std::string sig_file = "";
+
+    // Parse dos argumentos de linha de comando
     for (int i = 1; i < argc; i++)
     {
         std::string arg = argv[i];
@@ -44,19 +55,25 @@ int main(int argc, char **argv)
             test_mode = "COMPLIANCE";
         else if (arg == "--trace")
             trace_mode = true;
+        else if (arg == "--sig-start" && i + 1 < argc)
+            sig_start = std::stoul(argv[++i], nullptr, 16);
+        else if (arg == "--sig-end" && i + 1 < argc)
+            sig_end = std::stoul(argv[++i], nullptr, 16);
+        else if (arg == "--sig-file" && i + 1 < argc)
+            sig_file = argv[++i];
     }
 
     Testbench<Vtop_level> tb("traces/trace_e2e_" + test_mode + ".vcd");
 
     std::cout << BOLDCYAN << "\n==> SuperNova-RV E2E " << test_mode << " Verification Engine" << RESET << std::endl;
     std::cout << "--- Loading Binary: " << hex_file_path << std::endl;
-    if (trace_mode && test_mode == "ISA")
+    if (trace_mode)
     {
         std::cout << "--- Trace Mode: ENABLED" << std::endl;
     }
 
     // ====================================================
-    // 1. Parser de Memória
+    // 1. Parser de Memória (Suporte a @ADDR e Multi-Word)
     // ====================================================
     std::map<uint32_t, uint32_t> memory;
     std::ifstream file(hex_file_path);
@@ -75,7 +92,8 @@ int main(int argc, char **argv)
             continue;
         if (line[0] == '@')
         {
-            current_addr = std::stoul(line.substr(1), nullptr, 16);
+            // Multiplica por 4 para converter Word Address de volta para Byte Address
+            current_addr = std::stoul(line.substr(1), nullptr, 16) * 4;
             continue;
         }
         std::stringstream ss(line);
@@ -101,7 +119,7 @@ int main(int argc, char **argv)
     // ====================================================
     tb.reset();
 
-    int max_cycles = 10000;
+    int max_cycles = 500000; // Aumentado para testes de compliance maiores
     bool test_passed = false;
     bool test_failed = false;
     std::string uart_buffer = "";
@@ -110,10 +128,10 @@ int main(int argc, char **argv)
     {
         // ESTÁGIO 1: IMEM
         uint32_t pc = tb.dut->imem_addr_o & 0xFFFFFFFC;
-        tb.dut->imem_rdata_i = (memory.count(pc)) ? memory[pc] : 0x00000013; // 0x13 = NOP
+        tb.dut->imem_rdata_i = (memory.count(pc)) ? memory[pc] : 0x00000013; // NOP
 
-        // IMPRESSÃO DO TRACE (Se ativado e for teste de ISA)
-        if (trace_mode && test_mode == "ISA")
+        // IMPRESSÃO DO TRACE
+        if (trace_mode)
         {
             std::cout << "[Cycle " << std::dec << std::setw(4) << std::setfill(' ') << cycle << "] "
                       << "PC: 0x" << std::hex << std::setw(8) << std::setfill('0') << pc
@@ -169,18 +187,61 @@ int main(int argc, char **argv)
             }
             else
             {
-                memory[daddr] = ddata;
+                // Lógica de Escrita Parcial (Read-Modify-Write)
+                uint32_t current_val = (memory.count(daddr)) ? memory[daddr] : 0;
+                uint32_t mask = 0;
+                uint8_t be = tb.dut->dmem_be_o; // O sinal que vem da sua lsu.sv
+
+                // Transforma os bits de Byte Enable em máscara de 32 bits
+                if (be & 0x1)
+                    mask |= 0x000000FF;
+                if (be & 0x2)
+                    mask |= 0x0000FF00;
+                if (be & 0x4)
+                    mask |= 0x00FF0000;
+                if (be & 0x8)
+                    mask |= 0xFF000000;
+
+                // Aplica a máscara: mantém o que já estava lá e atualiza só os bytes habilitados
+                memory[daddr] = (current_val & ~mask) | (ddata & mask);
             }
         }
-
         tb.tick();
     }
 
     // ====================================================
-    // 3. Resultado Final Dinâmico
+    // 3. Resultado Final & Signature Dump
     // ====================================================
     if (test_passed)
     {
+        // Geração do Arquivo de Assinatura (Compliance Oficial)
+        if (test_mode == "COMPLIANCE" && !sig_file.empty())
+        {
+            std::ofstream sf(sig_file);
+            if (!sf.is_open())
+            {
+                std::cerr << BOLDRED << "Erro: Nao foi possivel criar arquivo de assinatura: " << sig_file << RESET << std::endl;
+                return 1;
+            }
+            sig_start &= 0xFFFFFFF0; // Garante alinhamento em blocos de 16 bytes (4 words)
+
+            // O Spike imprime 4 words por linha, da word mais significativa (addr+12) para a menos (addr)
+            for (uint32_t addr = sig_start; addr < sig_end; addr += 16)
+            {
+                uint32_t val0 = memory.count(addr + 0) ? memory[addr + 0] : 0;
+                uint32_t val1 = memory.count(addr + 4) ? memory[addr + 4] : 0;
+                uint32_t val2 = memory.count(addr + 8) ? memory[addr + 8] : 0;
+                uint32_t val3 = memory.count(addr + 12) ? memory[addr + 12] : 0;
+
+                sf << std::hex << std::setw(8) << std::setfill('0') << val3
+                   << std::setw(8) << std::setfill('0') << val2
+                   << std::setw(8) << std::setfill('0') << val1
+                   << std::setw(8) << std::setfill('0') << val0 << "\n";
+            }
+            sf.close();
+            std::cout << "--- Signature Dumped to: " << sig_file << " (" << std::dec << ((sig_end - sig_start) / 4) << " words)\n";
+        }
+
         std::cout << BOLDCYAN << "\n✅ E2E " << test_mode << " TEST: PASSED" << RESET << "\n"
                   << std::endl;
         return 0;
