@@ -31,20 +31,25 @@ VERILATOR_FLAGS := --cc --exe --build -Wall --trace $(VERILATOR_SEARCH) -I$(INC_
 # Regras Dinâmicas de Simulação (Pattern Rules)
 # ==========================================
 
+# UNIT TESTS: Source must be in tb/unit/tb_*.cpp
 test-unit-%: $(PKG_FILES) %.sv $(UNIT_DIR)/tb_%.cpp
 	@echo " "
 	@mkdir -p $(BUILD_DIR)
-	@echo "==> [Unidade] Compilando módulo $* com Verilator..."
+	@echo "==> [Unit] Verilating module $*..."
 	@export LC_ALL=C MAKEFLAGS="-s"; $(VERILATOR) $(VERILATOR_FLAGS) --top-module $* $^
 	@echo " "
-	@echo "==> [Unidade] Executando simulação de $*..."
+	@echo "==> [Unit] Running simulation: $*..."
 	@./$(BUILD_DIR)/V$*
 
+# INTEGRATION TESTS: Source must be in tb/integration/tb_*.cpp
+# Added --top-module $* to allow testing sub-systems like controlpath
 test-int-%: $(PKG_FILES) %.sv $(INT_DIR)/tb_%.cpp
+	@echo " "
 	@mkdir -p $(BUILD_DIR)
-	@echo "==> [Integração] Compilando módulo top-level $*..."
-	@export LC_ALL=C MAKEFLAGS="-s"; $(VERILATOR) $(VERILATOR_FLAGS) $^
-	@echo "==> [Integração] Executando simulação de $*..."
+	@echo "==> [Integration] Verilating module $*..."
+	@export LC_ALL=C MAKEFLAGS="-s"; $(VERILATOR) $(VERILATOR_FLAGS) --top-module $* $^
+	@echo " "
+	@echo "==> [Integration] Running simulation: $*..."
 	@./$(BUILD_DIR)/V$*
 
 # ==========================================
