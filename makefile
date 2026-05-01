@@ -148,8 +148,8 @@ test-compliance-%: $(PKG_FILES) top_level.sv tb/e2e/tb_e2e_rv32i.cpp | sw-compil
 
 # Captura todos os arquivos .S na pasta de testes do RISC-V e extrai apenas o nome do teste
 COMPLIANCE_SRCS := $(wildcard sw/compliance/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/*.S)
-# COMPLIANCE_TESTS := $(patsubst sw/compliance/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/%.S, %, $(COMPLIANCE_SRCS))
-COMPLIANCE_TESTS := $(filter-out jalr-01, $(patsubst sw/compliance/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/%.S, %, $(COMPLIANCE_SRCS)))
+COMPLIANCE_TESTS := $(patsubst sw/compliance/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/%.S, %, $(COMPLIANCE_SRCS))
+# COMPLIANCE_TESTS := $(filter-out jalr-01, $(patsubst sw/compliance/riscv-arch-test/riscv-test-suite/rv32i_m/I/src/%.S, %, $(COMPLIANCE_SRCS)))
 
 # Cria uma regra que depende de todos os test-compliance-[nome]
 .PHONY: test-compliance-all

@@ -1,3 +1,0 @@
-[submodule "sw/compliance/riscv-arch-test"]
-	path = sw/compliance/riscv-arch-test
-	url = https://github.com/riscv-non-isa/riscv-arch-test.git
