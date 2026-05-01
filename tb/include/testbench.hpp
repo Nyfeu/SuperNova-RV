@@ -68,9 +68,13 @@ public:
     void tick()
     {
         dut->clk_i = 0;
-        eval();
+        eval(); // settle low phase
+
         dut->clk_i = 1;
-        eval();
+        eval(); // posedge (posedge triggered logic)
+
+        dut->clk_i = 0;
+        eval(); // settle after edge
     }
 
     // Aplica a rotina padrão de Reset assíncrono (ativo em baixo)

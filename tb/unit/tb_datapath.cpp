@@ -52,41 +52,42 @@ enum WbSrc
 };
 
 // ========================================================
-// Helper: inject NOP (ADDI x0, x0, 0)
-// ========================================================
-void insert_nop(Testbench<Vdatapath> &tb)
-{
-    tb.dut->instr_rdata_i = 0x00000013;
-    tb.dut->reg_we_i = 0;
-    tb.eval();
-    tb.tick();
-}
-
-// ========================================================
 // Helper: apply ADDI
 // ========================================================
 void exec_addi(Testbench<Vdatapath> &tb, uint32_t instr)
 {
+    // 1. Injeta a instrução no barramento
     tb.dut->instr_rdata_i = instr;
 
+    // 2. Define os sinais de controle (o que a Control Unit faria instantaneamente)
     tb.dut->stall_i = 0;
     tb.dut->branch_valid_i = 0;
     tb.dut->jalr_sel_i = 0;
-
     tb.dut->imm_type_i = ImmI;
     tb.dut->alu_src_a_i = AluSrcARs1;
     tb.dut->alu_src_b_i = AluSrcBImm;
     tb.dut->alu_op_i = AluAdd;
-
     tb.dut->mem_we_i = 0;
     tb.dut->mem_size_i = MemSizeWord;
     tb.dut->mem_unsigned_i = 0;
-
     tb.dut->wb_src_i = WbSrcAlu;
     tb.dut->reg_we_i = 1;
 
+    // 3. PROPAGAÇÃO COMBINACIONAL
+    // Permite que o Verilator resolva a ALU, extensões de sinal e os Muxes
+    // antes de qualquer borda de clock.
     tb.eval();
-    tb.tick();
+
+    // 4. BORDA DE SUBIDA (Posedge)
+    // É neste exato momento que o Banco de Registradores captura o Write-Back.
+    tb.dut->clk_i = 1;
+    tb.eval();
+
+    // 5. BORDA DE DESCIDA (Negedge)
+    // Prepara o clock para o próximo ciclo e garante que a próxima instrução
+    // injetada pelo C++ comece com o clock zerado.
+    tb.dut->clk_i = 0;
+    tb.eval();
 }
 
 // ========================================================
@@ -129,10 +130,8 @@ int main(int argc, char **argv)
     std::cout << "--- Independent Writes ---" << std::endl;
 
     exec_addi(tb, 0x00A00093); // x1 = 10
-    insert_nop(tb);
 
     exec_addi(tb, 0x01400113); // x2 = 20
-    insert_nop(tb);
 
     if (read_reg(tb, 1) != 10)
     {
@@ -157,11 +156,9 @@ int main(int argc, char **argv)
     std::cout << "\n--- Dependent Chain (with bubbles) ---" << std::endl;
 
     exec_addi(tb, 0x00500193); // x3 = 5
-    insert_nop(tb);
 
     // x4 = x3 + 10 → ADDI x4, x3, 10
     exec_addi(tb, (10 << 20) | (3 << 15) | (4 << 7) | 0x13);
-    insert_nop(tb);
 
     uint32_t x4 = read_reg(tb, 4);
 
@@ -180,7 +177,6 @@ int main(int argc, char **argv)
     std::cout << "\n--- x0 Immutability ---" << std::endl;
 
     exec_addi(tb, 0x06300013); // ADDI x0, x0, 99
-    insert_nop(tb);
 
     if (read_reg(tb, 0) != 0)
     {
