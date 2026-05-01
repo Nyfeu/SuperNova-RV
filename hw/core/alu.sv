@@ -1,10 +1,12 @@
 /*
+
     PROJECT: SuperNova-RV
     MODULE: Arithmetic Logic Unit (alu)
     DESCRIPTION: Purely combinational unit for mathematical and logical operations.
 
     AUTHOR: André Solano Ferreira Rodrigues Maiolini
     DATE: 2026-04-30
+
 */
 
 module alu #(
