@@ -12,6 +12,8 @@ INT_DIR    := $(TB_DIR)/integration
 INC_DIR    := $(TB_DIR)/include
 BUILD_DIR  := build
 
+PKG_FILES  := hw/core/supernova_pkg.sv
+
 HW_SUBDIRS := $(shell find $(HW_DIR) -type d)
 VPATH = $(HW_SUBDIRS)
 
@@ -29,16 +31,16 @@ VERILATOR_FLAGS := --cc --exe --build -Wall --trace $(VERILATOR_SEARCH) -I$(INC_
 # Regras Dinâmicas de Simulação (Pattern Rules)
 # ==========================================
 
-test-unit-%: %.sv $(UNIT_DIR)/tb_%.cpp
+test-unit-%: $(PKG_FILES) %.sv $(UNIT_DIR)/tb_%.cpp
 	@echo " "
 	@mkdir -p $(BUILD_DIR)
 	@echo "==> [Unidade] Compilando módulo $* com Verilator..."
-	@export LC_ALL=C MAKEFLAGS="-s"; $(VERILATOR) $(VERILATOR_FLAGS) $^
+	@export LC_ALL=C MAKEFLAGS="-s"; $(VERILATOR) $(VERILATOR_FLAGS) --top-module $* $^
 	@echo " "
 	@echo "==> [Unidade] Executando simulação de $*..."
 	@./$(BUILD_DIR)/V$*
 
-test-int-%: %.sv $(INT_DIR)/tb_%.cpp
+test-int-%: $(PKG_FILES) %.sv $(INT_DIR)/tb_%.cpp
 	@mkdir -p $(BUILD_DIR)
 	@echo "==> [Integração] Compilando módulo top-level $*..."
 	@export LC_ALL=C MAKEFLAGS="-s"; $(VERILATOR) $(VERILATOR_FLAGS) $^

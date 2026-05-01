@@ -1,0 +1,23 @@
+# =========================================================
+# SuperNova-RV Dependency Matrix
+# =========================================================
+
+# If any file in a target's list is changed,
+# the corresponding test will be executed on pre-commit.
+
+targets:
+  alu:
+    - hw/core/alu.sv
+    - tb/unit/tb_alu.cpp
+    - hw/core/supernova_pkg.sv
+
+  reg_file:
+    - hw/core/reg_file.sv
+    - tb/unit/tb_reg_file.cpp
+    # Note that reg_file does not depend on the package (yet)
+
+  fetch_stage:
+    - hw/core/fetch_stage.sv
+    - tb/unit/tb_fetch_stage.cpp
+    - hw/core/pc_reg.sv
+    - hw/core/supernova_pkg.sv

@@ -53,15 +53,21 @@ jobs:
       image: verilator/verilator:latest
 
     steps:
-      - name: Checkout do código
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
+    - name: Checkout do código
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
 
-      - name: Garantir Python
-        run: |
-          apt-get update
-          apt-get install -y python3 python3-pip
+    - name: Garantir Python
+      run: |
+        apt-get update
+        apt-get install -y python3 python3-pip python3-venv
 
-      - name: Executar testes inteligentes
-        run: python3 scripts/smart_test.py
+    - name: Criar ambiente Python
+      run: |
+        python3 -m venv .venv
+        .venv/bin/pip install --upgrade pip
+        .venv/bin/pip install -r requirements.txt
+
+    - name: Executar testes inteligentes
+      run: .venv/bin/python scripts/smart_test.py
