@@ -53,3 +53,27 @@ targets:
     - hw/core/instr_decoder.sv
     - tb/unit/tb_instr_decoder.cpp
     - hw/core/supernova_pkg.sv
+
+  decode_stage:
+    - hw/core/decode_stage.sv
+    - tb/unit/tb_decode_stage.cpp
+    - hw/core/reg_file.sv
+    - hw/core/imm_gen.sv
+    - hw/core/supernova_pkg.sv
+
+  execute_stage:
+    - hw/core/execute_stage.sv
+    - tb/unit/tb_execute_stage.cpp
+    - hw/core/alu.sv
+    - hw/core/supernova_pkg.sv
+
+  memory_stage:
+    - hw/core/memory_stage.sv
+    - tb/unit/tb_memory_stage.cpp
+    - hw/core/lsu.sv
+    - hw/core/supernova_pkg.sv
+
+  writeback_stage:
+    - hw/core/writeback_stage.sv
+    - tb/unit/tb_writeback_stage.cpp
+    - hw/core/supernova_pkg.sv
