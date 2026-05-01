@@ -26,3 +26,8 @@ targets:
     - hw/core/imm_gen.sv
     - tb/unit/tb_imm_gen.cpp
     - hw/core/supernova_pkg.sv
+
+  lsu:
+    - hw/core/lsu.sv
+    - tb/unit/tb_lsu.cpp
+    - hw/core/supernova_pkg.sv

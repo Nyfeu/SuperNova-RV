@@ -42,4 +42,12 @@ package supernova_pkg;
 
   } imm_type_e;
 
+  // Definition of Memory Access Sizes
+
+  typedef enum logic [1:0] {
+    MemSizeByte = 2'b00,  // lb, lbu, sb
+    MemSizeHalf = 2'b01,  // lh, lhu, sh
+    MemSizeWord = 2'b10   // lw, sw
+  } mem_size_e;
+
 endpackage
