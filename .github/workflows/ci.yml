@@ -39,35 +39,37 @@ jobs:
   rtl-linting:
     name: Verible Lint
     runs-on: ubuntu-latest
-    needs: changes # <--- Depende do controlador
-    steps:
-      - name: Bypass Message (If No HW Changes)
-        if: ${{ needs.changes.outputs.hardware == 'false' }}
-        run: echo "✅ Nenhuma alteração de hardware detectada. Linter finalizado em bypass."
 
+    steps:
       - name: Checkout do código
-        if: ${{ needs.changes.outputs.hardware == 'true' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Cache Verible
-        if: ${{ needs.changes.outputs.hardware == 'true' }}
         id: cache-verible
         uses: actions/cache@v4
         with:
           path: verible-bin
-          key: ${{ runner.os }}-verible-latest
+          # Mudamos a chave para v2. Isso força o GitHub a ignorar o cache antigo e baixar do zero.
+          key: ${{ runner.os }}-verible-v2
 
-      - name: Instalar Verible
-        if: ${{ needs.changes.outputs.hardware == 'true' && steps.cache-verible.outputs.cache-hit != 'true' }}
+      - name: Instalar Verible (se necessário)
+        if: steps.cache-verible.outputs.cache-hit != 'true'
         run: |
           wget $(curl -s https://api.github.com/repos/chipsalliance/verible/releases/latest | grep browser_download_url | grep linux-static-x86_64.tar.gz | cut -d '"' -f 4) -O verible.tar.gz
-          mkdir verible-bin
+          mkdir -p verible-bin
           tar -xzf verible.tar.gz -C verible-bin --strip-components=1
 
-      - name: Executar Linter
-        if: ${{ needs.changes.outputs.hardware == 'true' }}
+      - name: Configurar PATH e Executar Linter
         run: |
-          echo "$PWD/verible-bin/bin" >> $GITHUB_PATH
+          # Usa o caminho absoluto garantido pelo GitHub
+          echo "${{ github.workspace }}/verible-bin/bin" >> $GITHUB_PATH
+          
+          # Exporta localmente para este mesmo passo (o GITHUB_PATH só faz efeito no PRÓXIMO step)
+          export PATH="${{ github.workspace }}/verible-bin/bin:$PATH"
+          
+          # Sanity check: Se isso falhar, o erro aparece antes do make
+          verible-verilog-lint --version 
+          
           make lint
 
   # ==========================================
