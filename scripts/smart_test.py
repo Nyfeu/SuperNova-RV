@@ -7,21 +7,31 @@ import yaml
 CONFIG_FILE = "supernova.yml"
 
 def get_changed_files():
-    """Obtém a lista de arquivos alterados, adaptando-se ao ambiente (Local vs CI)."""
+    """Obtém a lista de arquivos alterados, adaptando-se ao ambiente (Local vs CI vs PR)."""
     
     is_ci = os.environ.get('GITHUB_ACTIONS') == 'true'
+    event_name = os.environ.get('GITHUB_EVENT_NAME')
+    base_ref = os.environ.get('GITHUB_BASE_REF') # Ex: 'main' em um PR
     
     if is_ci:
-        cmd = ["git", "diff", "--name-only", "HEAD~1", "HEAD"]
+        if event_name == 'pull_request' and base_ref:
+            # Em um PR, compara a branch alvo inteira com o código atual do PR
+            # O 'origin/' é necessário porque o runner baixa as referências remotas
+            cmd = ["git", "diff", "--name-only", f"origin/{base_ref}", "HEAD"]
+            print(f"==> Modo PR detectado: Comparando origin/{base_ref} com HEAD")
+        else:
+            # Em um push direto para a main, compara com o commit imediatamente anterior
+            cmd = ["git", "diff", "--name-only", "HEAD~1", "HEAD"]
+            print("==> Modo Push detectado: Comparando HEAD~1 com HEAD")
     else:
+        # Localmente, olha para o 'stage'
         cmd = ["git", "diff", "--cached", "--name-only"]
         
     result = subprocess.run(cmd, capture_output=True, text=True)
     
-    # Adicione esta verificação de segurança:
     if result.returncode != 0:
         print(f"❌ Erro ao executar git diff: {result.stderr}", file=sys.stderr)
-        sys.exit(1) # Interrompe o script se o Git falhar
+        sys.exit(1)
         
     return [f for f in result.stdout.strip().split('\n') if f]
 
