@@ -5,52 +5,72 @@
 # ==========================================
 # Variáveis de Diretórios
 # ==========================================
-HW_DIR     := hw
-TB_DIR     := tb
-UNIT_DIR   := $(TB_DIR)/unit
-INT_DIR    := $(TB_DIR)/integration
-INC_DIR    := $(TB_DIR)/include
-BUILD_DIR  := build
+HW_DIR      := hw
+TB_DIR      := tb
+UNIT_DIR    := $(TB_DIR)/unit
+INT_DIR     := $(TB_DIR)/integration
+INC_DIR     := $(TB_DIR)/include
 
-PKG_FILES  := hw/core/supernova_pkg.sv
+# Estrutura de Build Organizada
+BUILD_DIR   := build
+GEN_DIR     := $(BUILD_DIR)/gen
+BIN_DIR     := $(BUILD_DIR)/bin
+TRACES_DIR  := traces
 
-HW_SUBDIRS := $(shell find $(HW_DIR) -type d)
-VPATH = $(HW_SUBDIRS)
+PKG_FILES   := hw/core/supernova_pkg.sv
+
+# Descoberta de subdiretórios de hardware para o Verilator
+HW_SUBDIRS  := $(shell find $(HW_DIR) -type d)
+VPATH        = $(HW_SUBDIRS)
 
 # ==========================================
 # Ferramentas e Flags
 # ==========================================
-LINTER     := verible-verilog-lint
-VERILATOR  := verilator
+LINTER      := verible-verilog-lint
+VERILATOR   := verilator
 
-# Adicionamos a flag --Mdir apontando para o BUILD_DIR
+# Configuração de busca do Verilator
 VERILATOR_SEARCH := $(foreach dir, $(HW_SUBDIRS), -y $(dir))
-VERILATOR_FLAGS := --cc --exe --build -Wall --trace $(VERILATOR_SEARCH) -I$(INC_DIR) --Mdir $(BUILD_DIR)
+
+# Flags base (Mdir e o binário final são definidos dinamicamente nas regras)
+VERILATOR_FLAGS := --cc --exe --build -Wall --trace $(VERILATOR_SEARCH) -I$(INC_DIR)
+
+# ==========================================
+# Regras de Preparação
+# ==========================================
+.PHONY: prepare
+prepare:
+	@mkdir -p $(GEN_DIR)
+	@mkdir -p $(BIN_DIR)
+	@mkdir -p $(TRACES_DIR)
 
 # ==========================================
 # Regras Dinâmicas de Simulação (Pattern Rules)
 # ==========================================
 
-# UNIT TESTS: Source must be in tb/unit/tb_*.cpp
-test-unit-%: $(PKG_FILES) %.sv $(UNIT_DIR)/tb_%.cpp
+# UNIT TESTS
+test-unit-%: $(PKG_FILES) %.sv $(UNIT_DIR)/tb_%.cpp | prepare
 	@echo " "
-	@mkdir -p $(BUILD_DIR)
-	@echo "==> [Unit] Verilating module $*..."
-	@export LC_ALL=C MAKEFLAGS="-s"; $(VERILATOR) $(VERILATOR_FLAGS) --top-module $* $^
+	@echo "==> [Unit] Verilating and building module $*..."
+	@export LC_ALL=C MAKEFLAGS="-s"; \
+	$(VERILATOR) $(VERILATOR_FLAGS) --top-module $* \
+	--Mdir $(GEN_DIR)/$* -o ../../bin/V$* \
+	$(foreach f,$^,$(abspath $(f)))
 	@echo " "
 	@echo "==> [Unit] Running simulation: $*..."
-	@./$(BUILD_DIR)/V$*
+	@./$(BIN_DIR)/V$*
 
-# INTEGRATION TESTS: Source must be in tb/integration/tb_*.cpp
-# Added --top-module $* to allow testing sub-systems like controlpath
-test-int-%: $(PKG_FILES) %.sv $(INT_DIR)/tb_%.cpp
+# INTEGRATION TESTS
+test-int-%: $(PKG_FILES) %.sv $(INT_DIR)/tb_%.cpp | prepare
 	@echo " "
-	@mkdir -p $(BUILD_DIR)
-	@echo "==> [Integration] Verilating module $*..."
-	@export LC_ALL=C MAKEFLAGS="-s"; $(VERILATOR) $(VERILATOR_FLAGS) --top-module $* $^
+	@echo "==> [Integration] Verilating and building module $*..."
+	@export LC_ALL=C MAKEFLAGS="-s"; \
+	$(VERILATOR) $(VERILATOR_FLAGS) --top-module $* \
+	--Mdir $(GEN_DIR)/$* -o ../../bin/V$* \
+	$(foreach f,$^,$(abspath $(f)))
 	@echo " "
 	@echo "==> [Integration] Running simulation: $*..."
-	@./$(BUILD_DIR)/V$*
+	@./$(BIN_DIR)/V$*
 
 # ==========================================
 # Targets Administrativos
@@ -62,6 +82,7 @@ lint:
 	@find $(HW_DIR) -name '*.sv' -o -name '*.v' | xargs $(LINTER) --rules_config_search --lint_fatal
 
 clean:
-	@echo "==> Limpando diretório de build..."
+	@echo "==> Limpando artefatos de build e logs de simulação..."
 	@rm -rf $(BUILD_DIR)
+	@rm -rf $(TRACES_DIR)
 	@echo "Limpeza concluída."
