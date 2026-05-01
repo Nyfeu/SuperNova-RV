@@ -6,7 +6,7 @@ O Gerador de Imediatos é um módulo puramente combinacional responsável por ex
 ## Interface
 | Nome do Sinal | Direção | Largura | Descrição |
 | :---          | :---    | :---    | :---      |
-| `instr_i`     | Entrada | 32      | A instrução bruta de 32 bits buscada da memória. |
+| `instr_i`     | Entrada | 28      | A instrução bruta de 32 bits sem o `op_code` buscada da memória. |
 | `imm_type_i`  | Entrada | Enum    | Sinal de controle indicando o formato da instrução (I, S, B, U, J). |
 | `imm_o`       | Saída   | 32      | O valor imediato reconstruído e estendido em sinal de 32 bits. |
 

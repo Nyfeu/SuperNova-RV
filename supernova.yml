@@ -21,3 +21,8 @@ targets:
     - tb/unit/tb_fetch_stage.cpp
     - hw/core/pc_reg.sv
     - hw/core/supernova_pkg.sv
+  
+  imm_gen:
+    - hw/core/imm_gen.sv
+    - tb/unit/tb_imm_gen.cpp
+    - hw/core/supernova_pkg.sv
