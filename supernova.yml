@@ -10,24 +10,118 @@ targets:
     - hw/core/alu.sv
     - tb/unit/tb_alu.cpp
     - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
 
   reg_file:
     - hw/core/reg_file.sv
     - tb/unit/tb_reg_file.cpp
-    # Note that reg_file does not depend on the package (yet)
+    - tb/include/testbench.hpp
 
   fetch_stage:
     - hw/core/fetch_stage.sv
     - tb/unit/tb_fetch_stage.cpp
     - hw/core/pc_reg.sv
     - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
   
   imm_gen:
     - hw/core/imm_gen.sv
     - tb/unit/tb_imm_gen.cpp
     - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
 
   lsu:
     - hw/core/lsu.sv
     - tb/unit/tb_lsu.cpp
     - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
+
+  branch_unit:
+    - hw/core/branch_unit.sv
+    - tb/unit/tb_branch_unit.cpp
+    - tb/include/testbench.hpp
+  
+  decode_stage:
+    - hw/core/decode_stage.sv
+    - tb/unit/tb_decode_stage.cpp
+    - hw/core/reg_file.sv
+    - hw/core/imm_gen.sv
+    - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
+
+  execute_stage:
+    - hw/core/execute_stage.sv
+    - tb/unit/tb_execute_stage.cpp
+    - hw/core/alu.sv
+    - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
+
+  instr_decoder:
+    - hw/core/instr_decoder.sv
+    - tb/unit/tb_instr_decoder.cpp
+    - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
+
+  decode_stage:
+    - hw/core/decode_stage.sv
+    - tb/unit/tb_decode_stage.cpp
+    - hw/core/reg_file.sv
+    - hw/core/imm_gen.sv
+    - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
+
+  execute_stage:
+    - hw/core/execute_stage.sv
+    - tb/unit/tb_execute_stage.cpp
+    - hw/core/alu.sv
+    - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
+
+  memory_stage:
+    - hw/core/memory_stage.sv
+    - tb/unit/tb_memory_stage.cpp
+    - hw/core/lsu.sv
+    - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
+
+  writeback_stage:
+    - hw/core/writeback_stage.sv
+    - tb/unit/tb_writeback_stage.cpp
+    - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
+
+  datapath:
+    - hw/core/datapath.sv
+    - tb/unit/tb_datapath.cpp
+    - hw/core/fetch_stage.sv
+    - hw/core/decode_stage.sv
+    - hw/core/execute_stage.sv
+    - hw/core/memory_stage.sv
+    - hw/core/writeback_stage.sv
+    - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
+
+  controlpath:
+    - hw/core/controlpath.sv
+    - tb/unit/tb_controlpath.cpp
+    - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
+    - hw/core/branch_unit.sv
+    - hw/code/instr_decoder.sv
+    - tb/include/testbench.hpp
+  
+  top_level:
+    - hw/core/top_level.sv
+    - tb/unit/tb_top_level.cpp
+    - hw/core/fetch_stage.sv
+    - hw/core/decode_stage.sv
+    - hw/core/execute_stage.sv
+    - hw/core/memory_stage.sv
+    - hw/core/writeback_stage.sv
+    - hw/core/controlpath.sv
+    - hw/core/lsu.sv
+    - hw/core/alu.sv
+    - hw/core/reg_file.sv
+    - hw/core/imm_gen.sv
+    - hw/core/supernova_pkg.sv
+    - tb/include/testbench.hpp
