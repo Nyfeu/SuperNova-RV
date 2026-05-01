@@ -65,7 +65,7 @@ public:
     }
 
     // Gera um ciclo de clock completo (borda de descida -> borda de subida)
-    virtual void tick()
+    void tick()
     {
         dut->clk_i = 0;
         eval();
@@ -74,7 +74,7 @@ public:
     }
 
     // Aplica a rotina padrão de Reset assíncrono (ativo em baixo)
-    virtual void reset()
+    void reset()
     {
         dut->rst_ni = 0;
         tick();
