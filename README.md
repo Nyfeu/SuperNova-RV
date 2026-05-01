@@ -13,7 +13,7 @@ A evolução deste projeto segue uma analogia cósmica: assim como estrelas pass
 Cada **milestone** representa não apenas um estado funcional, mas uma **transição de paradigma arquitetural**.
 
 
-- [ ] ☁️ **Nebula** — Núcleo RV32I *single-cycle* funcional;  
+- [x] ☁️ **Nebula** — Núcleo RV32I *single-cycle* funcional;  
 - [ ] 🌟 **Protostar** — Pipeline básico (5 estágios) com tratamento de hazards;  
 - [ ] ⭐ **Main Sequence** — Núcleo estável e utilizável;
 - [ ] 🔴 **Red Giant** — Expansão arquitetural; 
