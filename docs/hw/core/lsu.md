@@ -1,9 +1,9 @@
 # Load Store Unit
 
-## Contexto
+## 1. Contexto
 A Unidade de Carregamento/Armazenamento fica entre o Caminho de Dados da CPU (Arquivo de Registradores / ALU) e a Memória de Dados. É um módulo de caminho de dados puramente combinacional. É responsável por alinhar dados a serem escritos em memória baseado nos bits inferiores do endereço e gerar as máscaras corretas de habilitação de byte. Inversamente, ela extrai, alinha e faz sign/zero-extend de dados lidos da memória de volta para a CPU.
 
-## Interface
+## 2. Interface
 
 | Nome do Sinal    | Direção | Largura | Descrição |
 | :---             | :---    | :---    | :---      |
@@ -17,7 +17,7 @@ A Unidade de Carregamento/Armazenamento fica entre o Caminho de Dados da CPU (Ar
 | `mem_be_o`       | Saída   | 4       | Habilitadores de Byte (máscara) indicando quais bytes devem ser escritos. |
 | `rdata_o`        | Saída   | 32      | Dados extraídos e com sign/zero-extended de volta para o Arquivo de Registradores. |
 
-### Descrição dos Sinais
+### 2.1. Descrição dos Sinais
 
 - **`addr_i`**: O endereço de memória de 32 bits calculado pela ALU. Os bits inferiores (bits [1:0]) determinam o offset dentro da palavra de 32 bits.
 
@@ -37,16 +37,16 @@ A Unidade de Carregamento/Armazenamento fica entre o Caminho de Dados da CPU (Ar
 
 - **`rdata_o`**: Dados retornados ao Arquivo de Registradores após leitura de memória. Os bits irrelevantes foram extraídos e o valor foi estendido (sign-extended ou zero-extended conforme necessário).
 
-## Arquitetura
+## 3. Arquitetura
 
 A LSU alinha operações de memória. Como RISC-V RV32I usa endereçamento em bytes, mas leituras/escritas ocorrem em blocos de memória de 32 bits, os 2 bits inferiores de `addr_i` determinam o offset.
 
-### Operações de Armazenamento (Store)
+### 3.1. Operações de Armazenamento (Store)
 
 - Os 8 ou 16 bits de `wdata_i` são deslocados à esquerda para corresponder ao offset do endereço.
 - `mem_be_o` é assertado conforme necessário para indicar quais bytes devem ser escritos.
 
-#### Exemplo de Armazenamento de Byte (SB)
+#### 3.1.1. Exemplo de Armazenamento de Byte (SB)
 
 Se `addr_i[1:0] = 2'b01` (offset 1 byte), e desejamos escrever um byte:
 ```
@@ -56,7 +56,7 @@ mem_wdata_o = 0x0000AB00  (byte deslocado para posição correta)
 mem_be_o = 4'b0010  (habilita apenas o segundo byte)
 ```
 
-#### Exemplo de Armazenamento de Half-word (SH)
+#### 3.1.2. Exemplo de Armazenamento de Half-word (SH)
 
 Se `addr_i[1:0] = 2'b10` (offset 2 bytes), e desejamos escrever um half-word:
 ```
@@ -66,7 +66,7 @@ mem_wdata_o = 0xABCD0000  (half-word deslocado para posição correta)
 mem_be_o = 4'b1100  (habilita os dois bytes superiores)
 ```
 
-#### Exemplo de Armazenamento de Word (SW)
+#### 3.1.3. Exemplo de Armazenamento de Word (SW)
 
 O endereço já deve estar alinhado em palavras (bits [1:0] = 0):
 ```
@@ -76,12 +76,12 @@ mem_wdata_o = 0x12345678  (sem deslocamento necessário)
 mem_be_o = 4'b1111  (todos os 4 bytes habilitados)
 ```
 
-### Operações de Carregamento (Load)
+### 3.2. Operações de Carregamento (Load)
 
 - Os bits relevantes de `mem_rdata_i` são deslocados à direita e opcionalmente sign-extended.
 - O resultado é uma palavra completa de 32 bits, com extensão apropriada.
 
-#### Exemplo de Carregamento de Byte com Sinal (LB)
+#### 3.2.1. Exemplo de Carregamento de Byte com Sinal (LB)
 
 Se `addr_i[1:0] = 2'b01` (offset 1 byte), e `mem_rdata_i = 0x12AB34CD`:
 ```
@@ -91,7 +91,7 @@ sign_extended = (0xAB[7] == 1) ? 0xFFFFFFAB : 0x000000AB
 rdata_o = 0xFFFFFFAB  (se sinal negativo, 0xAB = -85)
 ```
 
-#### Exemplo de Carregamento de Byte sem Sinal (LBU)
+#### 3.2.2. Exemplo de Carregamento de Byte sem Sinal (LBU)
 
 Mesmo cenário, mas com zero-extend:
 ```
@@ -101,7 +101,7 @@ zero_extended = 0x000000AB
 rdata_o = 0x000000AB  (sempre positivo)
 ```
 
-#### Exemplo de Carregamento de Half-word com Sinal (LH)
+#### 3.2.3. Exemplo de Carregamento de Half-word com Sinal (LH)
 
 Se `addr_i[1:0] = 2'b10` (offset 2 bytes), e `mem_rdata_i = 0xFFFF1234`:
 ```
@@ -111,7 +111,7 @@ sign_extended = (0xFF12[15] == 1) ? 0xFFFFFF12 : 0x0000FF12
 rdata_o = 0xFFFFFF12  (se sinal negativo)
 ```
 
-#### Exemplo de Carregamento de Word (LW)
+#### 3.2.4. Exemplo de Carregamento de Word (LW)
 
 O endereço deve estar alinhado em palavras:
 ```
@@ -119,14 +119,14 @@ mem_rdata_i = 0x12345678
 rdata_o = 0x12345678  (sem processamento necessário)
 ```
 
-## Considerações de Design
+## 4. Considerações de Design
 
-### Capacidade de Memória
+### 4.1. Capacidade de Memória
 - A LSU assume que a memória de dados já é alinhada em palavras (word-aligned).
 - A memória fornece uma palavra completa de 32 bits em cada leitura, independentemente do tamanho solicitado.
 - Para escritas, o controlador de memória usa `mem_be_o` para escrever apenas os bytes desejados.
 
-### Casos Especiais
+### 4.2. Casos Especiais
 
 - **Endereços não alinhados**: RV32I permite cargas/armazenamentos de bytes e half-words não alinhados. A LSU trata isso corretamente com deslocamentos.
 - **Boundary conditions**: Se um half-word começar em um byte limite (offset 3), ainda funciona, mas pode cruzar uma palavra (não suportado em algumas implementações; RV32I permite).

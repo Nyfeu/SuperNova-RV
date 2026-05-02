@@ -1,9 +1,9 @@
 # Estágio de Execução (Execute Stage)
 
-## Contexto
+## 1. Contexto
 O Estágio de Execução é o terceiro bloco lógico do Caminho de Dados. É o coração computacional do processador. Ele encapsula a Unidade Lógico-Aritmética (ALU) principal, os multiplexadores de operandos (Mux A e Mux B), e um Somador de Alvo dedicado para cálculos de endereços de desvios e saltos.
 
-## Interface
+## 2. Interface
 
 | Nome do Sinal    | Direção | Largura/Tipo    | Descrição |
 | :---             | :---    | :---            | :---      |
@@ -18,7 +18,7 @@ O Estágio de Execução é o terceiro bloco lógico do Caminho de Dados. É o c
 | `target_addr_o`  | Saída   | 32 bits         | Endereço alvo computado (`PC + Imm`). |
 | `jalr_addr_o`    | Saída   | 32 bits         | Endereço JALR computado (`(Rs1 + Imm) & ~1`). |
 
-### Descrição dos Sinais
+### 2.1. Descrição dos Sinais
 
 - **`pc_i`**: O Contador de Programa atual, que chegou do estágio de Busca. Usado pelo Somador de Alvo para calcular endereços PC-relativos (para branches e JAL).
 
@@ -36,11 +36,11 @@ O Estágio de Execução é o terceiro bloco lógico do Caminho de Dados. É o c
 
 - **`jalr_addr_o`**: O endereço JALR computado, que é o resultado da ALU com o bit menos significativo zerado: `(Rs1 + Imm) & ~1`. Seguindo a especificação RISC-V, o endereço de salto JALR sempre deve ser alinhado em 2 bytes (bit 0 = 0).
 
-## Arquitetura
+## 3. Arquitetura
 
 Este módulo é puramente combinacional. Não contém elementos sequenciais, apenas lógica combinacional que processa entradas em paralelo.
 
-### Componentes Principais
+### 3.1. Componentes Principais
 
 1. **Somador de Alvo (Target Adder)**
       - Operação fixa: `target_addr = pc_i + imm_i`
@@ -75,7 +75,7 @@ Este módulo é puramente combinacional. Não contém elementos sequenciais, ape
       - Garante que o endereço JALR sempre tenha o bit 0 = 0 (alinhamento de 2 bytes)
       - Implementado como uma porta AND simples (negligenciável em latência)
 
-### Operações da ALU
+### 3.2. Operações da ALU
 
 | Código | Mnemônico | Operação | Descrição |
 | :---   | :---      | :---     | :---      |
@@ -90,9 +90,9 @@ Este módulo é puramente combinacional. Não contém elementos sequenciais, ape
 | 8      | SUB       | A - B    | Subtração |
 | 13     | SRA       | A >>> B[4:0] | Deslocamento à direita aritmético |
 
-## Integração com o Pipeline
+## 4. Integração com o Pipeline
 
-### Uso dos Outputs
+### 4.1. Uso dos Outputs
 
 - **`alu_result_o`**: Utilizado para:
   - Armazenar resultado em registrador (instrução R-type, I-type)
@@ -105,4 +105,3 @@ Este módulo é puramente combinacional. Não contém elementos sequenciais, ape
 
 - **`jalr_addr_o`**: Utilizado para:
   - Resolver JALR com o endereço alvo garantidamente alinhado em 2 bytes
-  

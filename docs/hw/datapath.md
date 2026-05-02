@@ -1,11 +1,13 @@
-# Caminho de Dados (Datapath)
+# Caminho de Dados (*Datapath*)
 
-## Contexto
+## 1. Contexto
 O Caminho de Dados é o núcleo estrutural do processador SuperNova-RV. Ele instancia e interconecta todas as unidades operacionais: Contador de Programa (PC), Arquivo de Registradores, Gerador de Imediato, ALU e Unidade de Carregamento/Armazenamento (LSU). Ele executa operações estritamente baseadas nos sinais de controle fortemente tipados fornecidos pela Unidade de Controle. Também faz interface direta com a Memória de Instruções (IMEM) e a Memória de Dados (DMEM).
 
-## Interface
+![Diagrama de blocos](../../assets/single_cycle_datapath.png){ .hero-img }
 
-### Sinais de Entrada/Saída
+## 2. Interface
+
+### 2.1. Sinais de Entrada/Saída
 
 | Nome do Sinal      | Direção | Largura/Tipo    | Descrição |
 | :---               | :---    | :---            | :---      |
@@ -36,14 +38,18 @@ O Caminho de Dados é o núcleo estrutural do processador SuperNova-RV. Ele inst
 | `rs1_data_o`       | Saída   | 32 bits         | Repassa dados de Rs1 para a Unidade de Desvios. |
 | `rs2_data_o`       | Saída   | 32 bits         | Repassa dados de Rs2 para a Unidade de Desvios. |
 
-## Fluxo de Dados Interno (Estágios do Pipeline Mapeados para Ciclo Único)
+## 3. Fluxo de Dados Interno 
 
 1. **Busca (Fetch):** O registrador PC contém o endereço da instrução atual. Um somador dedicado computa `PC + 4`. 
 2. **Decodificação (Decode):** A instrução alimenta as portas `ReadAddr` do Arquivo de Registradores e do `ImmGen`.
 3. **Execução (Execute):** 
-   - Multiplexador A seleciona entre `rs1`, `PC` ou `0`.
-   - Multiplexador B seleciona entre `rs2` ou o `Imediato`.
-   - Um Somador de Alvo dedicado computa `PC + Imediato` para desvios e JAL.
+      - Multiplexador A seleciona entre `rs1`, `PC` ou `0`.
+      - Multiplexador B seleciona entre `rs2` ou o `Imediato`.
+      - Um Somador de Alvo dedicado computa `PC + Imediato` para desvios e JAL.
 4. **Memória (Memory):** A LSU alinha leituras e escritas baseado no endereço de saída da ALU.
 5. **Escrita de Retorno (Write-Back):** O Multiplexador WBSrc seleciona dados da ALU, da LSU, ou `PC + 4` para escrever em `rd`.
 6. **Próximo PC (Next PC):** O Multiplexador PCSrc seleciona entre `PC + 4`, `Somador de Alvo`, ou o `Resultado da ALU` (para JALR), e o realimenta ao registrador PC.
+
+
+!!! note "Instruction Cycle"
+      A implementação da microarquitetura é de ciclo único (`single-cycle`), portanto todos os estágios acontecem no mesmo tick do `clk`.
