@@ -1,10 +1,10 @@
 # Estágio de Aceesso à Memória 
 
-## Contexto
+## 1. Contexto
 
 O estágio de acesso à memória é o quarto bloco lógico do caminho de dados (*datapath*). Ele age como uma ponte entre o núcleo de execução do processador e acesso à memória de dados (via DMem - barramento de dados). Ele encapsula a Load-Store Unit (LSU), lidando com alinhamento, byte-enables, e sign-extension para leituras e escritas na memória. 
 
-## Interface
+## 2. Interface
 | Signal Name      | Direction | Width/Type      | Description |
 | :---             | :---      | :---            | :---        |
 | `alu_result_i`   | Input     | 32-bit logic    | Memory address computed by the ALU. |
@@ -18,6 +18,6 @@ O estágio de acesso à memória é o quarto bloco lógico do caminho de dados (
 | `dmem_be_o`      | Output    | 4-bit logic     | Byte Enables for DMEM writes. |
 | `lsu_rdata_o`    | Output    | 32-bit logic    | Formatted, sign-extended data read from memory. |
 
-## Architecture
+## 3. Architecture
 
 É um componente puramente estrutural. Instancia o módulo `lsu.sv` e traduz requisições internas em trasanções externas válidas.

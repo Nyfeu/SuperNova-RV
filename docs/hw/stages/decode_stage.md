@@ -1,9 +1,9 @@
 # Estágio de Decodificação 
 
-## Contexto
+## 1. Contexto
 O Estágio de Decodificação é o segundo bloco lógico do Caminho de Dados. Ele recebe a instrução bruta obtida da memória e extrai os operandos necessários para a execução. Ele encapsula o Arquivo de Registradores e o Gerador de Imediato, fornecendo uma interface limpa para o Estágio de Execução.
 
-## Interface
+## 2. Interface
 
 | Nome do Sinal    | Direção | Largura/Tipo    | Descrição |
 | :---             | :---    | :---            | :---      |
@@ -16,7 +16,7 @@ O Estágio de Decodificação é o segundo bloco lógico do Caminho de Dados. El
 | `rs2_data_o`     | Saída   | 32 bits         | Dados lidos do Registrador Fonte 2. |
 | `imm_o`          | Saída   | 32 bits         | Valor de imediato com extensão de sinal. |
 
-### Descrição dos Sinais
+### 2.1. Descrição dos Sinais
 
 - **`clk_i`**: Clock principal do sistema. Usado para sincronizar as operações de escrita no Arquivo de Registradores (na borda de subida).
 
@@ -32,11 +32,11 @@ O Estágio de Decodificação é o segundo bloco lógico do Caminho de Dados. El
 
 - **`imm_o`**: O valor de imediato de 32 bits (sign-extended) gerado pelo Gerador de Imediato. Será usado como segundo operando da ALU ou como deslocamento em instruções de memória.
 
-## Arquitetura
+## 3. Arquitetura
 
 Este módulo é puramente um wrapper estrutural. Ele fatia a instrução de entrada `instr_i` para acionar as portas de endereço de leitura/escrita do `reg_file` instanciado e fornece os bits de dados úteis ao `imm_gen` instanciado. Atua como o fornecedor de dados para a ALU e a Unidade de Desvios no estágio de Execução subsequente.
 
-### Estrutura Interna
+### 3.1. Estrutura Interna
 
 O estágio de decodificação é organizado em três componentes principais:
 
@@ -57,13 +57,13 @@ O estágio de decodificação é organizado em três componentes principais:
    - Extrai Rd (bits [11:7]) para escrita
    - Fornece estes endereços ao Arquivo de Registradores
 
-### Considerações de Timing
+### 3.2. Considerações de Timing
 
 - **Latência de leitura**: As leituras são combinacionais, então qualquer atraso é apenas propagação através da lógica de decodificação e do array de registradores (~1-2 ps em tecnologias modernas).
 - **Latência de escrita**: A escrita é síncrona e acontece na borda de subida do clock. O novo dado está disponível para leitura no próximo ciclo.
 - **Timing crítico**: Geralmente não é crítico, pois as leituras paralelas do RF são rápidas.
 
-### Casos Especiais
+### 3.3. Casos Especiais
 
 - **Leitura/Escrita de x0**: Rs1 ou Rs2 = x0 (operando zero é comum); Rd = x0 (escritas são ignoradas).
 - **Forwarding**: Em pipelines com múltiplos estágios, se a instrução anterior escrever em um registrador que a instrução atual lê, pode haver atraso (data hazard). Técnicas de bypassing são usadas para evitar bolhas.

@@ -4,10 +4,10 @@ O desenvolvimento da **SuperNova-RV** segue uma hierarquia de verificação em t
 
 ## 1. Níveis de Verificação
 
-### Testes Unitários e de Integração
+### 1.1. Testes Unitários e de Integração
 Escritos em C++ usando a biblioteca nativa do Verilator. Eles injetam estímulos diretamente nos sinais dos módulos individuais (ex: ALU, Branch Unit) e comparam com saídas esperadas. O script `smart_test.py` mapeia o `git diff` e executa automaticamente apenas os testbenches dos módulos modificados.
 
-### Testes de Compliance E2E (RV32I Base Integer)
+### 1.2. Testes de Compliance E2E (RV32I Base Integer)
 Para garantir que a SuperNova-RV é um núcleo RISC-V autêntico, utilizamos o *Compliance Test Suite* oficial da RISC-V International. A verificação E2E avalia todo o *Datapath* e *Controlpath* de forma integrada.
 
 ## 2. A Abordagem de Compliance
@@ -15,6 +15,7 @@ Para garantir que a SuperNova-RV é um núcleo RISC-V autêntico, utilizamos o *
 Optamos por uma arquitetura de testes "congelada" (*vendored*) em vez de gerar os testes dinamicamente a cada simulação. Isso maximiza a velocidade do CI/CD e garante reprodutibilidade.
 
 O fluxo de verificação E2E funciona assim:
+
 1. **Compilação Cruzada:** O GNU GCC (`gcc-riscv64-unknown-elf`) compila cada teste Assembly `.S` nativo do diretório `sw/compliance/rv32i_m/` usando um *linker script* customizado (`compliance.ld`). O resultado é extraído em um binário `.hex`.
 2. **Verilating do Top-Level:** O Verilator converte o módulo `top_level.sv` em um executável C++ e injeta o firmware compilado na memória da CPU.
 3. **Execução em Hardware:** A simulação avança *clock* por *clock* até que o programa atinja a diretiva de *HALT* ou acione um *Timeout*.

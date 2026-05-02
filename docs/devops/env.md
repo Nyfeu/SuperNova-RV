@@ -4,13 +4,13 @@ Para projetar o **SuperNova-RV**, foi tomada a decisão de não depender da inst
 
 Para resolver isso, utilizamos um **DevContainer**.
 
-## O que é o DevContainer?
+## 1. O que é o DevContainer?
 
 O **DevContainer** (*Development Container*) é um ambiente **Docker** configurado especificamente para atuar como um ambiente de desenvolvimento completo e integrado ao *Visual Studio Code*.
 
 Ao abrir o projeto no *VS Code* e aceitar reabrir no container, o Docker baixa uma imagem *Ubuntu* (distro *Linux*), instala todas as dependências do hardware, mapeia o seu código-fonte para dentro do container e injeta as extensões do *VS Code* necessárias.
 
-## Ferramentas Pré-instaladas
+## 2. Ferramentas Pré-instaladas
 
 Nossa imagem base (`.devcontainer/Dockerfile`) instala automaticamente:
 
@@ -26,7 +26,7 @@ Nossa imagem base (`.devcontainer/Dockerfile`) instala automaticamente:
 
 Além disso, o arquivo `devcontainer.json` configura extensões do VS Code para SystemVerilog, C/C++ e suporte a sintaxe Assembly RISC-V.
 
-## Pipeline Local (Git Hooks)
+## 3. Pipeline Local (Git Hooks)
 
 Para evitar que código quebrado chegue ao repositório ou ao **GitHub Actions**, foram configurados dois **Git Hooks** principais na pasta `.githooks/` (que são ativados automaticamente na criação do DevContainer):
 
@@ -53,7 +53,7 @@ Exemplos Válidos:
 
 - `docs: atualiza documentacao do ambiente`
 
-## Build System (Makefile)
+## 4. Build System (Makefile)
 
 Nosso `makefile` na raiz do projeto é o maestro de todas as operações. Ele utiliza Pattern Rules (regras dinâmicas) do GNU Make.
 
@@ -65,7 +65,7 @@ make test-unit-alu
 
 O Makefile fará o match do padrão `test-unit-%`, criará o diretório `build/`, chamará o Verilator com as flags corretas (geração de trace VCD ativada) e executará o binário final resultante.
 
-## Documentação (MkDocs)
+## 5. Documentação (MkDocs)
 
 Este site que você está lendo é gerado pelo MkDocs com o tema Material. O DevContainer já instala todos os pacotes Python necessários descritos no `requirements.txt`.
 

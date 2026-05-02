@@ -2,7 +2,7 @@
 
 A ALU é o componente responsável por realizar todas as operações matemáticas e lógicas necessárias para a execução das instruções da arquitetura RV32I. Diferente do Banco de Registradores, a ALU é um circuito **puramente combinacional**; as suas saídas reagem instantaneamente (ignorando atrasos de propagação físicos) às mudanças nas suas entradas, sem depender de um sinal de clock.
 
-## Especificação da Interface
+## 1. Especificação da Interface
 
 O módulo SystemVerilog (`hw/core/alu.sv`) expõe as seguintes portas:
 
@@ -13,7 +13,7 @@ O módulo SystemVerilog (`hw/core/alu.sv`) expõe as seguintes portas:
 | `alu_op_i` | Entrada | 4 | Código de controle da operação a ser executada. |
 | `result_o` | Saída | 32 | Resultado da operação computada. |
 
-## Mapeamento de Operações (ALU Opcodes)
+## 2. Mapeamento de Operações (ALU Opcodes)
 
 Para facilitar a decodificação futura, o sinal `alu_op_i` foi desenhado com 4 bits, permitindo um mapeamento direto com os campos `funct3` e `funct7` das instruções RISC-V. O bit mais significativo (bit 3) é utilizado para diferenciar operações correlatas (como ADD/SUB e SRL/SRA).
 

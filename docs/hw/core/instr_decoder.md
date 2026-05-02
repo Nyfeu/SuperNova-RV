@@ -1,13 +1,13 @@
 # Decodificador de Instruções (ID)
 
-## Contexto
+## 1. Contexto
 O Decodificador de Instruções é o núcleo do Caminho de Controle (Control Path) na arquitetura SuperNova-RV. É um módulo puramente combinacional que implementa uma estratégia de decodificação em "projeto plano" (flat design). Em vez de depender de múltiplos decodificadores hierárquicos (como um decodificador principal seguido por um decodificador de ALU), ele lê os campos `Opcode`, `Funct3` e `Funct7` simultaneamente para gerar todos os sinais de controle fortemente tipados em um único estágio. Essa abordagem achata o caminho crítico e reduz a latência.
 
 A arquitetura segue o conjunto de instruções base RV32I (RISC-V 32-bit Integer) conforme especificado na ISA RISC-V, garantindo compatibilidade com software padrão dessa plataforma.
 
-## Interface
+## 2. Interface
 
-### Sinais de Entrada/Saída
+### 2.1. Sinais de Entrada/Saída
 
 | Nome do Sinal     | Direção | Largura/Tipo  | Descrição |
 | :---              | :---    | :---          | :---      |
@@ -24,7 +24,7 @@ A arquitetura segue o conjunto de instruções base RV32I (RISC-V 32-bit Integer
 | `is_branch_o`     | Saída   | 1 bit         | Indica se a instrução é um desvio condicional (B-Type). |
 | `is_jump_o`       | Saída   | 1 bit         | Indica se a instrução é um salto incondicional (JAL / JALR). |
 
-### Descrição dos Sinais de Controle
+### 2.2. Descrição dos Sinais de Controle
 
 - **`reg_we_o`**: Habilita a escrita do resultado no registrador de destino (Rd).
 - **`imm_type_o`**: Define o tipo de imediato que será gerado (I, S, B, U ou J) para estar disponível na próxima etapa.
@@ -36,7 +36,7 @@ A arquitetura segue o conjunto de instruções base RV32I (RISC-V 32-bit Integer
 - **`wb_src_o`**: Seleciona a origem do dado a ser escrito: resultado da ALU, dado da memória, ou PC+4.
 - **`is_branch_o` / `is_jump_o`**: Sinalizam instruções de controle de fluxo para que o núcleo execute a resolução de desvios apropriada.
 
-## Estratégia de Decodificação e Tabela de Verdade
+## 3. Estratégia de Decodificação e Tabela de Verdade
 
 O decodificador mapeia a instrução para os sinais de controle baseado nos opcodes base do RV32I.
 
@@ -56,7 +56,7 @@ O decodificador mapeia a instrução para os sinais de controle baseado nos opco
 *( * ) Desvios utilizam uma Unidade de Desvios dedicada no controle de nível superior; a ALU pode calcular endereços alvo ou permanecer inativa.*  
 *( ** ) Saltos escrevem PC+4 no registrador de destino, portanto `wb_src` roteia o registrador PC do pipeline.*
 
-### Detalhes dos Tipos de Instrução
+### 3.1. Detalhes dos Tipos de Instrução
 
 - **R-Type**: Operações entre registradores (ex: ADD, SUB, AND, OR). Todos os operandos vêm de registradores.
 - **I-Type**: Operações imediatas e carregamentos (ex: ADDI, LW, LH). Um operando é um registrador, o outro é um imediato de 12 bits.
@@ -65,11 +65,11 @@ O decodificador mapeia a instrução para os sinais de controle baseado nos opco
 - **U-Type**: Instruções com imediato de 20 bits (ex: LUI, AUIPC). Carregam valor imediato em bits superiores.
 - **J-Type**: Saltos incondicionais (JAL). Carregam o endereço de retorno em um registrador.
 
-## Operações Decodificadas da ALU
+## 4. Operações Decodificadas da ALU
 
 Para instruções `R-Type` e `I-Type`, o `alu_op_o` é derivado analisando `Funct3` (bits 14:12) e, quando necessário, `Funct7` (bit 30, que distingue ADD/SUB e SRL/SRA). Para todas as instruções de memória, PC-relativas e de salto, a ALU é forçada para `AluAdd` para calcular endereços de memória ou PCs alvo.
 
-### Tabela de Operações ALU (para R-Type e I-Type)
+### 4.1. Tabela de Operações ALU (para R-Type e I-Type)
 
 | Funct3 | Funct7 (R-Type) | Operação | Descrição |
 | :---   | :---            | :---     | :---      |
@@ -84,16 +84,16 @@ Para instruções `R-Type` e `I-Type`, o `alu_op_o` é derivado analisando `Func
 | `110`  | `0000000`       | OR       | Operação OR lógica |
 | `111`  | `0000000`       | AND      | Operação AND lógica |
 
-## Implementação e Considerações de Design
+## 5. Implementação e Considerações de Design
 
-### Projeto Combinacional Plano
+### 5.1. Projeto Combinacional Plano
 O decodificador implementa toda a lógica de decodificação em um único nível combinacional, evitando a necessidade de múltiplos estágios hierárquicos. Isso resulta em:
 - **Menor latência**: Nenhum atraso de propagação entre decodificadores intermediários.
 - **Previsibilidade**: O tempo crítico é bem definido e fácil de otimizar.
 - **Facilidade de depuração**: A lógica é centralizada e transparente.
 
-### Tratamento de Valores "Don't Care"
+### 5.2. Tratamento de Valores "Don't Care"
 Sinais com valor "X" devem ser sempre fixados em valores padrão conhecidos para evitar comportamentos não determinísticos que possam levar a latches indesejados.
 
-### Sinalização de Erros
+### 5.3. Sinalização de Erros
 O decodificador atualmente não sinaliza instruções inválidas explicitamente. Um módulo de detecção de exceções de nível superior é responsável por identificar opcodes não implementados ou instruções malformadas.

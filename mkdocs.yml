@@ -1,25 +1,89 @@
 site_name: SuperNova-RV
-site_description: "Custom RISC-V SoC & NPU Architecture"
+site_description: "Custom RISC-V Processor"
+site_url: https://nyfeu.github.io/SuperNova-RV/ # URL do seu site
+
+repo_url: https://github.com/Nyfeu/SuperNova-RV # Link para o repo
+repo_name: Nyfeu/SuperNova-RV
+edit_uri: edit/main/docs/
+
 theme:
   name: material
+  # Logo no canto superior esquerdo (usando vetor embutido)
+  icon:
+    logo: material/memory
+  language: pt-BR
   palette:
-    scheme: slate # Modo escuro por padrão
-    primary: teal
-  features:
-    - navigation.tabs
-    - content.code.copy
+    # Apenas Modo Escuro para forçar o estilo da imagem que você mandou
+    - scheme: slate
+      primary: black 
+      accent: indigo
+  font:
+    text: Inter
+    code: JetBrains Mono
 
-nav:
-  - Home: index.md
-  - Hardware:
-      - Arquitetura: hw/arquitetura.md
-      - Core (RV32I): hw/core.md
-  - Software:
-      - Toolchain: sw/toolchain.md
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.footer
+    - navigation.tracking
+    - navigation.top
+    - toc.follow
+    - content.code.copy
+    - content.tabs.link
+    - search.highlight
+    - search.suggest
+    - content.tooltips
+
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
-  - pymdownx.superfences
-  - pymdownx.arithmatex: 
+      line_spans: __span
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.arithmatex:
       generic: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - attr_list
+
+plugins:
+  - search
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Introdução:
+      - Visão Geral: index.md
+      - Primeiros Passos: intro/quickstart.md
+  - Hardware (RV32I):
+      - Visão Geral (Top Level): hw/top_level.md
+      - Datapath: hw/datapath.md
+      - Controlpath: hw/controlpath.md
+      - Estágios:
+          - Fetch: hw/stages/fetch_stage.md
+          - Decode: hw/stages/decode_stage.md
+          - Execute: hw/stages/execute_stage.md
+          - Memory: hw/stages/memory_stage.md
+          - Writeback: hw/stages/writeback_stage.md
+      - Componentes Internos (Core):
+          - ALU: hw/core/alu.md
+          - Branch Unit: hw/core/branch_unit.md
+          - Immediate Generator: hw/core/imm_gen.md
+          - Instruction Decoder: hw/core/instr_decoder.md
+          - Load/Store Unit (LSU): hw/core/lsu.md
+          - Register File: hw/core/reg_file.md
+  - DevOps & Verificação:
+      - Ambiente de Desenvolvimento: devops/env.md
+      - Verificação e CI: devops/verification.md
