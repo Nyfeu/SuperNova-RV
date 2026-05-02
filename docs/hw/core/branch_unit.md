@@ -56,9 +56,8 @@ A Unidade de Desvios implementa seis comparadores paralelos para suportar todas 
 A Unidade de Desvios é um módulo puramente combinacional que não contém estado sequencial. Todos os comparadores funcionam em paralelo, e o sinal de saída `branch_taken_o` é derivado combinacionalmente dos sinais de entrada.
 
 Este design oferece:
-- **Latência baixa**: Uma única etapa combinacional (típica da tecnologia CMOS moderno).
+- **Latência baixa**: Uma única etapa combinacional.
 - **Throughput**: Novo resultado a cada ciclo de clock (já que não há dependência de ciclo anterior).
-- **Simplicidade**: Nenhuma sincronização complexa ou arbitragem.
 
 ### Habilitação por `is_branch_i`
 O sinal `is_branch_i` atua como um habilitador geral. Quando baixo, a saída `branch_taken_o` é sempre zero, mesmo que uma condição fosse teoricamente verdadeira. Isso garante que a Unidade de Desvios não interfira com instruções não-branch.
@@ -93,21 +92,3 @@ Opcode para todas as instruções de desvio: `0x63` (bits 6:0 = `1100011`)
   - Salta 24 bytes adiante se `x3 < x4` (sem sinal)
   - `funct3 = 110`
   - Comparação sem sinal
-
-## Considerações de Design e Otimização
-
-### Seleção de Arquitetura
-A escolha entre implementações (comparadores paralelos vs. mux hierárquico) depende de:
-- **Velocidade crítica**: Se a latência de desvio for crítica, comparadores paralelos com mux rápido é preferível.
-- **Área de silício**: Múltiplos comparadores podem aumentar a área; um mux sequencial a reduz.
-- **Consumo de energia**: Comparadores sempre ativos consomem potência dinâmica mesmo quando não usados.
-
-### Forwarding de Dados
-Se Rs1 ou Rs2 for escrito pela instrução anterior, técnicas de forwarding são necessárias para evitar atraso:
-- Em pipelines simples, a Unidade de Desvios lê diretamente do RF (sem forwarding).
-- Em pipelines mais profundos, lógica de bypassing permite usar dados do stage anterior.
-
-### Tratamento de Casos Especiais
-- **Desvio para si mesmo**: `BEQ x1, x1, 0` é sempre verdadeiro (mesmo registrador sempre é igual a si mesmo).
-- **Comparação com x0**: Útil para testar se um registrador é zero (`BEQ x1, x0, label` salta se x1 == 0).
-- **Desvios de loop**: Desvios retroativos (backward branches) são comuns em loops e podem se beneficiar de previsão.

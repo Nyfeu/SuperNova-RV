@@ -15,6 +15,7 @@ Para garantir que a SuperNova-RV é um núcleo RISC-V autêntico, utilizamos o *
 Optamos por uma arquitetura de testes "congelada" (*vendored*) em vez de gerar os testes dinamicamente a cada simulação. Isso maximiza a velocidade do CI/CD e garante reprodutibilidade.
 
 O fluxo de verificação E2E funciona assim:
+
 1. **Compilação Cruzada:** O GNU GCC (`gcc-riscv64-unknown-elf`) compila cada teste Assembly `.S` nativo do diretório `sw/compliance/rv32i_m/` usando um *linker script* customizado (`compliance.ld`). O resultado é extraído em um binário `.hex`.
 2. **Verilating do Top-Level:** O Verilator converte o módulo `top_level.sv` em um executável C++ e injeta o firmware compilado na memória da CPU.
 3. **Execução em Hardware:** A simulação avança *clock* por *clock* até que o programa atinja a diretiva de *HALT* ou acione um *Timeout*.

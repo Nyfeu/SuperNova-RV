@@ -43,51 +43,37 @@ Este módulo é puramente combinacional. Não contém elementos sequenciais, ape
 ### Componentes Principais
 
 1. **Somador de Alvo (Target Adder)**
-   - Operação fixa: `target_addr = pc_i + imm_i`
-   - Implementado como um somador de 32 bits
-   - Funciona continuamente (sempre pronto)
-   - Saída: `target_addr_o`
-   - Usado para: Branches, JAL
+      - Operação fixa: `target_addr = pc_i + imm_i`
+      - Implementado como um somador de 32 bits
+      - Funciona continuamente (sempre pronto)
+      - Saída: `target_addr_o`
+      - Usado para: Branches, JAL
+
 
 2. **Multiplexador A (Mux A)**
-   - Seleciona o primeiro operando da ALU baseado em `alu_src_a_i`
-   - Opções: `rs1_data_i`, `pc_i`, ou constante `0`
-   - Saída alimenta a entrada A da ALU
+      - Seleciona o primeiro operando da ALU baseado em `alu_src_a_i`
+      - Opções: `rs1_data_i`, `pc_i`, ou constante `0`
+      - Saída alimenta a entrada A da ALU
+
 
 3. **Multiplexador B (Mux B)**
-   - Seleciona o segundo operando da ALU baseado em `alu_src_b_i`
-   - Opções: `rs2_data_i` ou `imm_i`
-   - Saída alimenta a entrada B da ALU
+      - Seleciona o segundo operando da ALU baseado em `alu_src_b_i`
+      - Opções: `rs2_data_i` ou `imm_i`
+      - Saída alimenta a entrada B da ALU
+
 
 4. **Unidade Lógico-Aritmética (ALU)**
-   - Executa a operação especificada por `alu_op_i`
-   - Operações suportadas: ADD, SUB, AND, OR, XOR, SLL, SRL, SRA, SLT, SLTU
-   - Saída: `alu_result_o` (32 bits)
-   - A ALU é uma unidade combinacional pura com latência típica de 1-2 ps
+      - Executa a operação especificada por `alu_op_i`
+      - Operações suportadas: ADD, SUB, AND, OR, XOR, SLL, SRL, SRA, SLT, SLTU
+      - Saída: `alu_result_o` (32 bits)
+      - A ALU é uma unidade combinacional pura
+
 
 5. **Lógica de Mascaramento JALR**
-   - Deriva `jalr_addr_o` diretamente de `alu_result_o`
-   - Operação: `jalr_addr_o = alu_result_o & 32'hFFFFFFFE`
-   - Garante que o endereço JALR sempre tenha o bit 0 = 0 (alinhamento de 2 bytes)
-   - Implementado como uma porta AND simples (negligenciável em latência)
-
-### Fluxo de Dados
-
-```
-pc_i, rs1_data_i, imm_i
-  │
-  ├─ Somador de Alvo: PC + Imm → target_addr_o
-  │
-  ├─ Mux A: (rs1_data_i, pc_i, 0) seleciona baseado em alu_src_a_i
-  │   └─ Saída → Entrada A da ALU
-  │
-  ├─ Mux B: (rs2_data_i, imm_i) seleciona baseado em alu_src_b_i
-  │   └─ Saída → Entrada B da ALU
-  │
-  └─ ALU: (A, B, alu_op_i) → alu_result_o
-       │
-       └─ Mascaramento LSB: alu_result_o & ~1 → jalr_addr_o
-```
+      - Deriva `jalr_addr_o` diretamente de `alu_result_o`
+      - Operação: `jalr_addr_o = alu_result_o & 32'hFFFFFFFE`
+      - Garante que o endereço JALR sempre tenha o bit 0 = 0 (alinhamento de 2 bytes)
+      - Implementado como uma porta AND simples (negligenciável em latência)
 
 ### Operações da ALU
 
@@ -119,47 +105,4 @@ pc_i, rs1_data_i, imm_i
 
 - **`jalr_addr_o`**: Utilizado para:
   - Resolver JALR com o endereço alvo garantidamente alinhado em 2 bytes
-
-### Timing Crítico
-
-A latência crítica do estágio de execução é dominada pela ALU:
-- Latência do Mux A/B: ~0.5 ps
-- Latência da ALU: ~1.5 ps (somador/lógica)
-- Latência do Somador de Alvo: ~1.5 ps
-- **Latência total**: ~2-3 ps (negligível em relação ao período do clock)
-
-### Considerações de Forwarding
-
-Em um single-cycle processor, não há forwarding necessário dentro do estágio de execução, pois todos os dados já foram preparados no estágio anterior. Em um processador com pipeline profundo:
-- O resultado da ALU pode precisar ser forwardado para a ALU do próximo ciclo
-- Técnicas de bypassing evitam bolhas de pipeline
-
-## Casos Especiais e Otimizações
-
-### ADD com Operando Zero
-- Mux A = Zero, ALU op = ADD → Implementa efetivamente uma cópia
-- Usado implicitamente em LUI e AUIPC (com Mux A = Zero)
-
-### PC-Relative Addressing
-- Mux A = PC, ALU op = ADD → Computa PC + constante
-- Usado em AUIPC e para calcular endereços em código position-independent
-
-### Shift Amount Masking
-- Para SLL, SRL, SRA: O operando B é mascarado para os 5 bits inferiores
-- Permite deslocamentos de 0-31 bits (máximo em 32-bit)
-- Implementado dentro da ALU como gating lógico
-
-### Otimizações de Área
-- O Somador de Alvo é um somador dedicado (não compartilhado com ALU)
-- Pode ser otimizado para apenas somar PC[31:2] + Imm[31:2] + flags de carry (reduz área)
-- Multiplexadores são usados em vez de seleção dinâmica (previsível em ASIC/síntese)
-
-## Validação e Testes
-
-Testes devem cobrir:
-- ✓ Todas as operações ALU (ADD, SUB, SLL, SRL, SRA, AND, OR, XOR, SLT, SLTU)
-- ✓ Seleção de operandos (Mux A com Rs1, PC, Zero; Mux B com Rs2, Imm)
-- ✓ Cálculo de Target Address (PC + Imm para vários offsets)
-- ✓ Mascaramento JALR (bit 0 sempre 0)
-- ✓ Combinações de operandos (negativo/positivo, zero, limites de 32-bit)
-- ✓ Compatibilidade com especificação RISC-V
+  

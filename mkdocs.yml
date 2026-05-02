@@ -1,5 +1,6 @@
 site_name: SuperNova-RV
 site_description: "Custom RISC-V SoC & NPU Architecture"
+
 theme:
   name: material
   palette:
@@ -7,15 +8,31 @@ theme:
     primary: teal
   features:
     - navigation.tabs
+    - navigation.sections # Melhor visualização para submenus aninhados
     - content.code.copy
 
 nav:
   - Home: index.md
-  - Hardware:
-      - Arquitetura: hw/arquitetura.md
-      - Core (RV32I): hw/core.md
-  - Software:
-      - Toolchain: sw/toolchain.md
+  - Hardware (RV32I):
+      - Visão Geral (Top Level): hw/top_level.md
+      - Datapath: hw/datapath.md
+      - Controlpath: hw/controlpath.md
+      - Estágios:
+          - Fetch: hw/stages/fetch_stage.md
+          - Decode: hw/stages/decode_stage.md
+          - Execute: hw/stages/execute_stage.md
+          - Memory: hw/stages/memory_stage.md
+          - Writeback: hw/stages/writeback_stage.md
+      - Componentes Internos (Core):
+          - ALU: hw/core/alu.md
+          - Branch Unit: hw/core/branch_unit.md
+          - Immediate Generator: hw/core/imm_gen.md
+          - Instruction Decoder: hw/core/instr_decoder.md
+          - Load/Store Unit (LSU): hw/core/lsu.md
+          - Register File: hw/core/reg_file.md
+  - DevOps & Verificação:
+      - Ambiente de Desenvolvimento: devops/env.md
+      - Verificação e CI: devops/verification.md
 
 markdown_extensions:
   - pymdownx.highlight:
