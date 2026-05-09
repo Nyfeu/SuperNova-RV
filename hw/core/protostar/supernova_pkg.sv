@@ -106,4 +106,80 @@ package supernova_pkg;
     WbSrcPc  = 2'b10   // PC + 4 (Used to save return address in Jumps)
   } wb_src_e;
 
+  // ==========================================================================
+  // Pipeline Control Bus (Agrupa os Enums do Nebula)
+  // ==========================================================================
+
+  typedef struct packed {
+
+    logic       reg_we;
+    wb_src_e    wb_src;
+    mem_size_e  mem_size;
+    logic       mem_we;
+    logic       mem_unsigned;
+    alu_src_a_e alu_src_a;
+    alu_src_b_e alu_src_b;
+    alu_op_e    alu_op;
+    logic       jalr_sel;
+
+  } ctrl_bus_t;
+
+  // ==========================================================================
+  // Estruturas de Barreira do Pipeline (Protostar)
+  // ==========================================================================
+
+  // 1. Fetch -> Decode
+  typedef struct packed {
+
+    logic [31:0] pc;
+    logic [31:0] pc_plus_4;
+    logic [31:0] instr;
+
+    // There's no control bus here because the signals are generated in the Decode stage, so they don't exist yet!
+
+  } if_id_t;
+
+  // 2. Decode -> Execute
+  typedef struct packed {
+
+    logic [31:0] pc;
+    logic [31:0] pc_plus_4;
+    logic [31:0] rs1_data;
+    logic [31:0] rs2_data;
+    logic [31:0] imm;
+    logic [4:0]  rs1_addr;   // It's useful for the future Forwarding Unit
+    logic [4:0]  rs2_addr;   // It's useful for the future Forwarding Unit
+    logic [4:0]  rd_addr;
+
+    // The control signals are generated in the Decode stage and need to be passed to the Execute stage
+    ctrl_bus_t ctrl;
+
+  } id_ex_t;
+
+  // 3. Execute -> Memory
+  typedef struct packed {
+
+    logic [31:0] alu_result;
+    logic [31:0] rs2_data;
+    logic [31:0] pc_plus_4;
+    logic [4:0]  rd_addr;
+
+    // The control signals go together with the data to the next stage, so we don't lose them!
+    ctrl_bus_t ctrl;
+
+  } ex_mem_t;
+
+  // 4. Memory -> Writeback
+  typedef struct packed {
+
+    logic [31:0] alu_result;
+    logic [31:0] lsu_rdata;
+    logic [31:0] pc_plus_4;
+    logic [4:0]  rd_addr;
+
+    // The last stage still needs the control signals to know what to write back!
+    ctrl_bus_t ctrl;
+
+  } mem_wb_t;
+
 endpackage

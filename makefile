@@ -2,8 +2,8 @@
 # SuperNova-RV - Master Makefile
 # ==========================================
 
-# Arquitetura alvo (Padrão: nebula. Para mudar: make test-unit-alu CORE_ARCH=protostar)
-CORE_ARCH   ?= nebula
+# Arquitetura alvo (Padrão: protostar. Para mudar: make test-unit-alu CORE_ARCH=nebula)
+CORE_ARCH   ?= protostar
 
 # ==========================================
 # Variáveis de Diretórios (Isolados por Core)

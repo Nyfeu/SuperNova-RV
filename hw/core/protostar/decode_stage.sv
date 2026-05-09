@@ -3,9 +3,9 @@
 /*
     PROJECT: SuperNova-RV
     MODULE: Decode Stage (decode_stage)
-    DESCRIPTION: Encapsulates the Register File and Immediate Generator.
-                 Receives only the instruction payload (bits 31 to 7) to
-                 avoid dangling opcode wires.
+    DESCRIPTION: Extracts register addresses, reads from the Register File,
+                 generates the immediate, and receives the Write-Back data
+                 from the end of the pipeline.
 */
 
 module decode_stage (
@@ -15,10 +15,13 @@ module decode_stage (
 
     // Data Inputs
     input logic [31:7] instr_payload_i,
-    input logic [31:0] rd_data_i,        // From Write-Back stage
+
+    // Write-Back Loop (End of Pipeline)
+    input logic [ 4:0] wb_rd_addr_i,
+    input logic [31:0] wb_rd_data_i,
+    input logic        wb_reg_we_i,
 
     // Control Inputs
-    input logic                     reg_we_i,
     input supernova_pkg::imm_type_e imm_type_i,
 
     // Data Outputs
@@ -35,11 +38,14 @@ module decode_stage (
   // --------------------------------------------------------
   reg_file u_reg_file (
       .clk_i     (clk_i),
-      .we_i      (reg_we_i),
+      .we_i      (wb_reg_we_i),
       .rs1_addr_i(instr_payload_i[19:15]),
       .rs2_addr_i(instr_payload_i[24:20]),
-      .rd_addr_i (instr_payload_i[11:7]),
-      .rd_data_i (rd_data_i),
+
+      // The WB address and data are coming from the end of the pipeline,
+      // so we need to connect them to the Register File for writing back the results.
+      .rd_addr_i(wb_rd_addr_i),
+      .rd_data_i(wb_rd_data_i),
 
       .rs1_data_o(rs1_data_o),
       .rs2_data_o(rs2_data_o)
