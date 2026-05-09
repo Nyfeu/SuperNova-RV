@@ -18,8 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       hardware: ${{ steps.filter.outputs.hardware }}
+      run_compliance: ${{ steps.build-matrix.outputs.run_compliance }}
+      matrix_cores: ${{ steps.build-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+      
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -30,8 +33,40 @@ jobs:
               - 'sw/**'
               - 'scripts/**'
               - 'makefile'
-              - 'supernova_pkg.sv'
               - '.github/workflows/ci.yml'
+            nebula:
+              - 'hw/core/nebula/**'
+              - 'tb/core/nebula/**'
+              - 'sw/**'
+              - 'scripts/**'
+              - 'makefile'
+              - '.github/workflows/ci.yml'
+            protostar:
+              - 'hw/core/protostar/**'
+              - 'tb/core/protostar/**'
+              - 'sw/**'
+              - 'scripts/**'
+              - 'makefile'
+              - '.github/workflows/ci.yml'
+
+      - name: Generate Compliance Matrix
+        id: build-matrix
+        run: |
+          CORES=()
+          # Adiciona à lista de testes se houve mudança na bolha de cada core (ou em arquivos comuns)
+          if [[ "${{ steps.filter.outputs.nebula }}" == 'true' ]]; then CORES+=('"nebula"'); fi
+          if [[ "${{ steps.filter.outputs.protostar }}" == 'true' ]]; then CORES+=('"protostar"'); fi
+          
+          # Formata o array do bash para um array JSON válido (ex: ["nebula", "protostar"])
+          JSON_ARRAY="[$(IFS=,; echo "${CORES[*]}")]"
+          echo "matrix=$JSON_ARRAY" >> $GITHUB_OUTPUT
+          
+          # Define uma flag para evitar erro se a matriz estiver vazia
+          if [ ${#CORES[@]} -gt 0 ]; then
+            echo "run_compliance=true" >> $GITHUB_OUTPUT
+          else
+            echo "run_compliance=false" >> $GITHUB_OUTPUT
+          fi
 
   # ==========================================
   # JOB 1: LINTING (Verible)
@@ -111,36 +146,41 @@ jobs:
   # JOB 3: COMPLIANCE (RV32I E2E)
   # ==========================================
   compliance-verification:
-    name: RV32I Compliance
+    name: RV32I Compliance (${{ matrix.core }})
     runs-on: ubuntu-latest
     needs: [changes, rtl-simulation]
+    
+    # 1. Só executa se houver pelo menos um core na matriz
+    if: ${{ needs.changes.outputs.run_compliance == 'true' }}
+    
+    # 2. Clona o Job com base no array JSON gerado no JOB 0
+    strategy:
+      fail-fast: false
+      matrix:
+        core: ${{ fromJSON(needs.changes.outputs.matrix_cores) }}
+        
     container:
       image: verilator/verilator:latest
 
     steps:
-      - name: Bypass Message (If No HW Changes)
-        if: ${{ needs.changes.outputs.hardware == 'false' }}
-        run: echo "✅ Nenhuma alteração de hardware detectada. Compliance E2E finalizado em bypass."
-
       - name: Checkout do código
-        if: ${{ needs.changes.outputs.hardware == 'true' }}
         uses: actions/checkout@v4
 
       - name: Instalar Dependências (Toolchain RISC-V)
-        if: ${{ needs.changes.outputs.hardware == 'true' }}
         run: |
           git config --global --add safe.directory '*'
           apt-get update
           apt-get install -y gcc-riscv64-unknown-elf make
 
+      # 3. Injeta a variável da matriz no Makefile
       - name: Executar Verificação Oficial (100% Compliance Suite)
-        if: ${{ needs.changes.outputs.hardware == 'true' }}
-        run: make test-compliance-all
+        run: make test-compliance-all CORE_ARCH=${{ matrix.core }}
 
+      # 4. Salva o artefato com o nome do core que falhou para evitar sobrescrita
       - name: Salvar Logs de Falha
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: compliance-error-traces
-          path: traces/
+          name: compliance-error-traces-${{ matrix.core }}
+          path: traces/${{ matrix.core }}/
           retention-days: 5
