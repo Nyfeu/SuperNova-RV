@@ -1,9 +1,12 @@
-/*
+`default_nettype none
 
+/*
     PROJECT: RISC-V CPU Core
 
     MODULE: Register File (reg_file)
     DESCRIPTION: Register file that stores temporary data during CPU execution.
+                 Features internal bypass (Write-First Forwarding) to resolve
+                 structural hazards in pipelined architectures.
 
     AUTHOR: André Solano Ferreira Rodrigues Maiolini
     DATE: 2026-04-30
@@ -24,7 +27,7 @@
     - rs2_data_o: Data read from source port 2
 
     BEHAVIOR:
-    - Purely combinational (asynchronous) read.
+    - Combinational read with internal forwarding.
     - Synchronous write on the rising edge of the clock.
     - Register x0 (address 0) is hardwired to zero, ignoring writes.
 
@@ -32,7 +35,6 @@
 
 module reg_file #(
 
-    // Default WIDTH values to 32 bits for RV32I
     parameter int WIDTH = 32
 
 ) (
@@ -58,24 +60,29 @@ module reg_file #(
   // --------------------------------------------------------
 
   always_ff @(posedge clk_i) begin
-
     // Writes only if Enable is active and it's not register x0
     if (we_i && (rd_addr_i != 5'b00000)) begin
       registers[rd_addr_i] <= rd_data_i;
     end
-
   end
 
   // --------------------------------------------------------
-  // Read Logic (Combinational)
+  // Read Logic (Combinational with Internal Bypass)
   // --------------------------------------------------------
 
   always_comb begin
+    // Returns 0 if address is 0.
+    // If reading the same register that is currently being written,
+    // bypass the old array value and forward the new data directly.
+    // Otherwise, read normally from the array.
 
-    // Returns the value from the array, or forces 0 if the address is 0
-    rs1_data_o = (rs1_addr_i == 5'b00000) ? '0 : registers[rs1_addr_i];
-    rs2_data_o = (rs2_addr_i == 5'b00000) ? '0 : registers[rs2_addr_i];
+    rs1_data_o = (rs1_addr_i == 5'b00000) ? '0 :
+                 (we_i && (rd_addr_i == rs1_addr_i)) ? rd_data_i :
+                 registers[rs1_addr_i];
 
+    rs2_data_o = (rs2_addr_i == 5'b00000) ? '0 :
+                 (we_i && (rd_addr_i == rs2_addr_i)) ? rd_data_i :
+                 registers[rs2_addr_i];
   end
 
 endmodule
