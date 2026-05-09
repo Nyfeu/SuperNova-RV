@@ -52,55 +52,72 @@ enum WbSrc
 };
 
 // ========================================================
-// Helper: apply ADDI
+// Helper: apply ADDI (PIPELINED 5-STAGES)
 // ========================================================
 void exec_addi(Testbench<Vdatapath> &tb, uint32_t instr)
 {
-    // 1. Injeta a instrução no barramento
+    // 1. CYCLE 1: INSTRUCTION FETCH (IF)
+    // Injeta a instrução no barramento de memória
     tb.dut->instr_rdata_i = instr;
 
-    // 2. Define os sinais de controle (o que a Control Unit faria instantaneamente)
+    // Desativa sinais de controle para evitar escrever lixo do estágio ID atual
     tb.dut->stall_i = 0;
     tb.dut->branch_valid_i = 0;
+    tb.dut->reg_we_i = 0;
+    tb.dut->mem_we_i = 0;
+    tb.tick(); // Clock: IF -> ID
+
+    // 2. CYCLE 2: INSTRUCTION DECODE (ID)
+    // A instrução agora chegou no if_id_reg.
+    // Agora sim aplicamos os sinais de controle da Control Unit!
+    tb.dut->instr_rdata_i = 0x00000013; // Injeta um NOP (addi x0, x0, 0) no Fetch
+
     tb.dut->jalr_sel_i = 0;
     tb.dut->imm_type_i = ImmI;
     tb.dut->alu_src_a_i = AluSrcARs1;
     tb.dut->alu_src_b_i = AluSrcBImm;
     tb.dut->alu_op_i = AluAdd;
-    tb.dut->mem_we_i = 0;
     tb.dut->mem_size_i = MemSizeWord;
     tb.dut->mem_unsigned_i = 0;
     tb.dut->wb_src_i = WbSrcAlu;
-    tb.dut->reg_we_i = 1;
+    tb.dut->reg_we_i = 1; // Habilita a escrita no RF para a ADDI
+    tb.tick();            // Clock: ID -> EX (Sinais de controle latcheados no id_ex_reg)
 
-    // 3. PROPAGAÇÃO COMBINACIONAL
-    // Permite que o Verilator resolva a ALU, extensões de sinal e os Muxes
-    // antes de qualquer borda de clock.
-    tb.eval();
+    // 3. CYCLE 3: EXECUTE (EX)
+    // A ADDI avançou para o id_ex_reg (ALU operando).
+    // O NOP que injetamos está agora no ID, então precisamos zerar o reg_we_i!
+    tb.dut->reg_we_i = 0;
+    tb.tick(); // Clock: EX -> MEM
 
-    // 4. BORDA DE SUBIDA (Posedge)
-    // É neste exato momento que o Banco de Registradores captura o Write-Back.
-    tb.dut->clk_i = 1;
-    tb.eval();
+    // 4. CYCLE 4: MEMORY (MEM)
+    // A ADDI passa direto pela memória
+    tb.tick(); // Clock: MEM -> WB
 
-    // 5. BORDA DE DESCIDA (Negedge)
-    // Prepara o clock para o próximo ciclo e garante que a próxima instrução
-    // injetada pelo C++ comece com o clock zerado.
-    tb.dut->clk_i = 0;
-    tb.eval();
+    // 5. CYCLE 5: WRITE-BACK (WB)
+    // Na borda de subida gerada por este tick, o dado é finalmente gravado
+    // no Banco de Registradores.
+    tb.tick();
 }
 
 // ========================================================
-// Helper: read register via rs1 exposure
+// Helper: read register via rs1 exposure (PIPELINED)
 // ========================================================
 uint32_t read_reg(Testbench<Vdatapath> &tb, uint32_t rs1)
 {
     uint32_t instr = (rs1 << 15) | 0x33; // fake R-type
 
+    // Ciclo 1: Injeta instrução falsa no Fetch
     tb.dut->instr_rdata_i = instr;
-    tb.dut->reg_we_i = 0;
+    tb.dut->reg_we_i = 0; // Garante que não causaremos writes acidentais
+    tb.tick();            // Move a instrução para o ID
 
-    tb.eval();
+    // Ciclo 2: A instrução está no Decode. Ela lê o banco de registradores
+    // combinaçãoalmente e prepara o envio para o EX.
+    tb.dut->instr_rdata_i = 0x00000013; // Injeta NOP atrás
+    tb.tick();                          // Move a instrução para o EX
+
+    // Agora o valor lido do registrador foi salvo em id_ex_reg.rs1_data,
+    // que está mapeado na saída rs1_data_o do datapath.sv
     return tb.dut->rs1_data_o;
 }
 
