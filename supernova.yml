@@ -1,119 +1,113 @@
-# =========================================================
-# SuperNova-RV Dependency Matrix
-# =========================================================
-
-# If any file in a target's list is changed,
-# the corresponding test will be executed on pre-commit.
-
 targets:
-  alu:
-    - hw/core/alu.sv
-    - tb/unit/tb_alu.cpp
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
-
-  reg_file:
-    - hw/core/reg_file.sv
-    - tb/unit/tb_reg_file.cpp
-    - tb/include/testbench.hpp
-
-  fetch_stage:
-    - hw/core/fetch_stage.sv
-    - tb/integration/tb_fetch_stage.cpp
-    - hw/core/pc_reg.sv
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
-  
-  imm_gen:
-    - hw/core/imm_gen.sv
-    - tb/unit/tb_imm_gen.cpp
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
-
-  lsu:
-    - hw/core/lsu.sv
-    - tb/unit/tb_lsu.cpp
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
-
-  branch_unit:
-    - hw/core/branch_unit.sv
-    - tb/unit/tb_branch_unit.cpp
-    - tb/include/testbench.hpp
-
-  execute_stage:
-    - hw/core/execute_stage.sv
-    - tb/integration/tb_execute_stage.cpp
-    - hw/core/alu.sv
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
-
-  instr_decoder:
-    - hw/core/instr_decoder.sv
-    - tb/unit/tb_instr_decoder.cpp
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
-
-  decode_stage:
-    - hw/core/decode_stage.sv
-    - tb/integration/tb_decode_stage.cpp
-    - hw/core/reg_file.sv
-    - hw/core/imm_gen.sv
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
-
-  execute_stage:
-    - hw/core/execute_stage.sv
-    - tb/integration/tb_execute_stage.cpp
-    - hw/core/alu.sv
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
-
-  memory_stage:
-    - hw/core/memory_stage.sv
-    - tb/integration/tb_memory_stage.cpp
-    - hw/core/lsu.sv
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
-
-  writeback_stage:
-    - hw/core/writeback_stage.sv
-    - tb/integration/tb_writeback_stage.cpp
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
-
-  datapath:
-    - hw/core/datapath.sv
-    - tb/integration/tb_datapath.cpp
-    - hw/core/fetch_stage.sv
-    - hw/core/decode_stage.sv
-    - hw/core/execute_stage.sv
-    - hw/core/memory_stage.sv
-    - hw/core/writeback_stage.sv
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
-
-  controlpath:
-    - hw/core/controlpath.sv
-    - tb/integration/tb_controlpath.cpp
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
-    - hw/core/branch_unit.sv
-    - hw/code/instr_decoder.sv
-    - tb/include/testbench.hpp
-  
-  top_level:
-    - hw/core/top_level.sv
-    - tb/integration/tb_top_level.cpp
-    - hw/core/fetch_stage.sv
-    - hw/core/decode_stage.sv
-    - hw/core/execute_stage.sv
-    - hw/core/memory_stage.sv
-    - hw/core/writeback_stage.sv
-    - hw/core/controlpath.sv
-    - hw/core/lsu.sv
-    - hw/core/alu.sv
-    - hw/core/reg_file.sv
-    - hw/core/imm_gen.sv
-    - hw/core/supernova_pkg.sv
-    - tb/include/testbench.hpp
+  core:
+    nebula:
+      pc_reg:
+      - hw/core/nebula/supernova_pkg.sv
+      - hw/core/nebula/pc_reg.sv
+      - tb/core/nebula/unit/tb_pc_reg.cpp
+      - tb/core/nebula/include/testbench.hpp
+      instr_decoder:
+      - hw/core/nebula/instr_decoder.sv
+      - hw/core/nebula/supernova_pkg.sv
+      - tb/core/nebula/unit/tb_instr_decoder.cpp
+      - tb/core/nebula/include/testbench.hpp
+      branch_unit:
+      - hw/core/nebula/supernova_pkg.sv
+      - hw/core/nebula/branch_unit.sv
+      - tb/core/nebula/unit/tb_branch_unit.cpp
+      - tb/core/nebula/include/testbench.hpp
+      reg_file:
+      - hw/core/nebula/supernova_pkg.sv
+      - hw/core/nebula/reg_file.sv
+      - tb/core/nebula/unit/tb_reg_file.cpp
+      - tb/core/nebula/include/testbench.hpp
+      lsu:
+      - hw/core/nebula/lsu.sv
+      - hw/core/nebula/supernova_pkg.sv
+      - tb/core/nebula/unit/tb_lsu.cpp
+      - tb/core/nebula/include/testbench.hpp
+      alu:
+      - hw/core/nebula/alu.sv
+      - hw/core/nebula/supernova_pkg.sv
+      - tb/core/nebula/unit/tb_alu.cpp
+      - tb/core/nebula/include/testbench.hpp
+      imm_gen:
+      - hw/core/nebula/imm_gen.sv
+      - hw/core/nebula/supernova_pkg.sv
+      - tb/core/nebula/unit/tb_imm_gen.cpp
+      - tb/core/nebula/include/testbench.hpp
+      e2e_rv32i:
+      - hw/core/nebula/supernova_pkg.sv
+      - tb/core/nebula/e2e/tb_e2e_rv32i.cpp
+      - tb/core/nebula/include/testbench.hpp
+      top_level:
+      - hw/core/nebula/top_level.sv
+      - hw/core/nebula/datapath.sv
+      - hw/core/nebula/decode_stage.sv
+      - hw/core/nebula/reg_file.sv
+      - hw/core/nebula/supernova_pkg.sv
+      - hw/core/nebula/imm_gen.sv
+      - hw/core/nebula/fetch_stage.sv
+      - hw/core/nebula/pc_reg.sv
+      - hw/core/nebula/execute_stage.sv
+      - hw/core/nebula/alu.sv
+      - hw/core/nebula/writeback_stage.sv
+      - hw/core/nebula/memory_stage.sv
+      - hw/core/nebula/lsu.sv
+      - hw/core/nebula/controlpath.sv
+      - hw/core/nebula/instr_decoder.sv
+      - hw/core/nebula/branch_unit.sv
+      - tb/core/nebula/integration/tb_top_level.cpp
+      - tb/core/nebula/include/testbench.hpp
+      controlpath:
+      - hw/core/nebula/controlpath.sv
+      - hw/core/nebula/instr_decoder.sv
+      - hw/core/nebula/supernova_pkg.sv
+      - hw/core/nebula/branch_unit.sv
+      - tb/core/nebula/integration/tb_controlpath.cpp
+      - tb/core/nebula/include/testbench.hpp
+      memory_stage:
+      - hw/core/nebula/memory_stage.sv
+      - hw/core/nebula/supernova_pkg.sv
+      - hw/core/nebula/lsu.sv
+      - tb/core/nebula/integration/tb_memory_stage.cpp
+      - tb/core/nebula/include/testbench.hpp
+      decode_stage:
+      - hw/core/nebula/decode_stage.sv
+      - hw/core/nebula/reg_file.sv
+      - hw/core/nebula/supernova_pkg.sv
+      - hw/core/nebula/imm_gen.sv
+      - tb/core/nebula/integration/tb_decode_stage.cpp
+      - tb/core/nebula/include/testbench.hpp
+      execute_stage:
+      - hw/core/nebula/execute_stage.sv
+      - hw/core/nebula/supernova_pkg.sv
+      - hw/core/nebula/alu.sv
+      - tb/core/nebula/integration/tb_execute_stage.cpp
+      - tb/core/nebula/include/testbench.hpp
+      writeback_stage:
+      - hw/core/nebula/writeback_stage.sv
+      - hw/core/nebula/supernova_pkg.sv
+      - tb/core/nebula/integration/tb_writeback_stage.cpp
+      - tb/core/nebula/include/testbench.hpp
+      datapath:
+      - hw/core/nebula/datapath.sv
+      - hw/core/nebula/decode_stage.sv
+      - hw/core/nebula/reg_file.sv
+      - hw/core/nebula/supernova_pkg.sv
+      - hw/core/nebula/imm_gen.sv
+      - hw/core/nebula/fetch_stage.sv
+      - hw/core/nebula/pc_reg.sv
+      - hw/core/nebula/execute_stage.sv
+      - hw/core/nebula/alu.sv
+      - hw/core/nebula/writeback_stage.sv
+      - hw/core/nebula/memory_stage.sv
+      - hw/core/nebula/lsu.sv
+      - tb/core/nebula/integration/tb_datapath.cpp
+      - tb/core/nebula/include/testbench.hpp
+      fetch_stage:
+      - hw/core/nebula/supernova_pkg.sv
+      - hw/core/nebula/fetch_stage.sv
+      - hw/core/nebula/pc_reg.sv
+      - tb/core/nebula/integration/tb_fetch_stage.cpp
+      - tb/core/nebula/include/testbench.hpp
