@@ -14,7 +14,7 @@ Cada **milestone** representa não apenas um estado funcional, mas uma **transi�
 
 
 - [x] ☁️ **Nebula** — Núcleo RV32I *single-cycle* funcional;  
-- [ ] 🌟 **Protostar** — Pipeline básico (5 estágios) com tratamento de hazards;  
+- [x] 🌟 **Protostar** — Pipeline básico (5 estágios) com tratamento de hazards;  
 - [ ] ⭐ **Main Sequence** — Núcleo estável e utilizável;
 - [ ] 🔴 **Red Giant** — Expansão arquitetural; 
 - [ ] 🌀 **Binary Star** — Microarquitetura superscalar *in-order*;
