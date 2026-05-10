@@ -84,24 +84,15 @@ module datapath #(
   // ========================================================
   logic load_use_hazard;
   logic pipeline_stall;
-  logic [4:0] if_id_rs1;
-  logic [4:0] if_id_rs2;
 
-  assign if_id_rs1 = if_id_reg.instr[19:15];
-  assign if_id_rs2 = if_id_reg.instr[24:20];
-
-  always_comb begin
-    load_use_hazard = 1'b0;
-    // Se a instrução no EX for um LOAD (lê da memória e escreve no registrador)
-    if (id_ex_reg.ctrl.reg_we && (id_ex_reg.ctrl.wb_src == WbSrcMem)) begin
-      // Se o destino desse Load for exigido pela instrução logo atrás no ID
-      if ((id_ex_reg.rd_addr == if_id_rs1) || (id_ex_reg.rd_addr == if_id_rs2)) begin
-        if (id_ex_reg.rd_addr != 5'd0) begin
-          load_use_hazard = 1'b1;  // Detectou! O pipeline precisa parar 1 ciclo.
-        end
-      end
-    end
-  end
+  hazard_unit u_hdu (
+      // Flag gerada "on the fly" avaliando se a instrução em EX é um Load
+      .id_ex_mem_read_i (id_ex_reg.ctrl.reg_we && (id_ex_reg.ctrl.wb_src == WbSrcMem)),
+      .id_ex_rd_addr_i  (id_ex_reg.rd_addr),
+      .if_id_rs1_addr_i (if_id_reg.instr[19:15]),
+      .if_id_rs2_addr_i (if_id_reg.instr[24:20]),
+      .load_use_hazard_o(load_use_hazard)
+  );
 
   // O stall da pipeline é ativado externamente OU pelo Load-Use
   assign pipeline_stall = stall_i | load_use_hazard;

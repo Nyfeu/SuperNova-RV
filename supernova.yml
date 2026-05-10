@@ -11,6 +11,11 @@ targets:
       - hw/core/protostar/pc_reg.sv
       - tb/core/protostar/unit/tb_pc_reg.cpp
       - tb/core/protostar/include/testbench.hpp
+      hazard_unit:
+      - hw/core/protostar/supernova_pkg.sv
+      - hw/core/protostar/hazard_unit.sv
+      - tb/core/protostar/unit/tb_hazard_unit.cpp
+      - tb/core/protostar/include/testbench.hpp
       instr_decoder:
       - hw/core/protostar/instr_decoder.sv
       - hw/core/protostar/supernova_pkg.sv
@@ -54,15 +59,16 @@ targets:
       - hw/core/protostar/forwarding_unit.sv
       - hw/core/protostar/fetch_stage.sv
       - hw/core/protostar/pc_reg.sv
+      - hw/core/protostar/hazard_unit.sv
       - hw/core/protostar/branch_unit.sv
-      - hw/core/protostar/memory_stage.sv
-      - hw/core/protostar/lsu.sv
-      - hw/core/protostar/decode_stage.sv
-      - hw/core/protostar/imm_gen.sv
-      - hw/core/protostar/reg_file.sv
       - hw/core/protostar/writeback_stage.sv
       - hw/core/protostar/execute_stage.sv
       - hw/core/protostar/alu.sv
+      - hw/core/protostar/memory_stage.sv
+      - hw/core/protostar/lsu.sv
+      - hw/core/protostar/decode_stage.sv
+      - hw/core/protostar/reg_file.sv
+      - hw/core/protostar/imm_gen.sv
       - tb/core/protostar/integration/tb_top_level.cpp
       - tb/core/protostar/include/testbench.hpp
       controlpath:
@@ -73,15 +79,15 @@ targets:
       - tb/core/protostar/include/testbench.hpp
       memory_stage:
       - hw/core/protostar/memory_stage.sv
-      - hw/core/protostar/supernova_pkg.sv
       - hw/core/protostar/lsu.sv
+      - hw/core/protostar/supernova_pkg.sv
       - tb/core/protostar/integration/tb_memory_stage.cpp
       - tb/core/protostar/include/testbench.hpp
       decode_stage:
       - hw/core/protostar/decode_stage.sv
-      - hw/core/protostar/imm_gen.sv
-      - hw/core/protostar/supernova_pkg.sv
       - hw/core/protostar/reg_file.sv
+      - hw/core/protostar/supernova_pkg.sv
+      - hw/core/protostar/imm_gen.sv
       - tb/core/protostar/integration/tb_decode_stage.cpp
       - tb/core/protostar/include/testbench.hpp
       execute_stage:
@@ -100,16 +106,17 @@ targets:
       - hw/core/protostar/forwarding_unit.sv
       - hw/core/protostar/fetch_stage.sv
       - hw/core/protostar/pc_reg.sv
+      - hw/core/protostar/hazard_unit.sv
       - hw/core/protostar/branch_unit.sv
+      - hw/core/protostar/writeback_stage.sv
       - hw/core/protostar/supernova_pkg.sv
+      - hw/core/protostar/execute_stage.sv
+      - hw/core/protostar/alu.sv
       - hw/core/protostar/memory_stage.sv
       - hw/core/protostar/lsu.sv
       - hw/core/protostar/decode_stage.sv
-      - hw/core/protostar/imm_gen.sv
       - hw/core/protostar/reg_file.sv
-      - hw/core/protostar/writeback_stage.sv
-      - hw/core/protostar/execute_stage.sv
-      - hw/core/protostar/alu.sv
+      - hw/core/protostar/imm_gen.sv
       - tb/core/protostar/integration/tb_datapath.cpp
       - tb/core/protostar/include/testbench.hpp
       fetch_stage:
@@ -161,40 +168,40 @@ targets:
       top_level:
       - hw/core/nebula/top_level.sv
       - hw/core/nebula/controlpath.sv
+      - hw/core/nebula/branch_unit.sv
       - hw/core/nebula/instr_decoder.sv
       - hw/core/nebula/supernova_pkg.sv
-      - hw/core/nebula/branch_unit.sv
       - hw/core/nebula/datapath.sv
       - hw/core/nebula/fetch_stage.sv
       - hw/core/nebula/pc_reg.sv
-      - hw/core/nebula/memory_stage.sv
-      - hw/core/nebula/lsu.sv
-      - hw/core/nebula/decode_stage.sv
-      - hw/core/nebula/imm_gen.sv
-      - hw/core/nebula/reg_file.sv
       - hw/core/nebula/writeback_stage.sv
       - hw/core/nebula/execute_stage.sv
       - hw/core/nebula/alu.sv
+      - hw/core/nebula/memory_stage.sv
+      - hw/core/nebula/lsu.sv
+      - hw/core/nebula/decode_stage.sv
+      - hw/core/nebula/reg_file.sv
+      - hw/core/nebula/imm_gen.sv
       - tb/core/nebula/integration/tb_top_level.cpp
       - tb/core/nebula/include/testbench.hpp
       controlpath:
       - hw/core/nebula/controlpath.sv
+      - hw/core/nebula/branch_unit.sv
       - hw/core/nebula/instr_decoder.sv
       - hw/core/nebula/supernova_pkg.sv
-      - hw/core/nebula/branch_unit.sv
       - tb/core/nebula/integration/tb_controlpath.cpp
       - tb/core/nebula/include/testbench.hpp
       memory_stage:
       - hw/core/nebula/memory_stage.sv
-      - hw/core/nebula/supernova_pkg.sv
       - hw/core/nebula/lsu.sv
+      - hw/core/nebula/supernova_pkg.sv
       - tb/core/nebula/integration/tb_memory_stage.cpp
       - tb/core/nebula/include/testbench.hpp
       decode_stage:
       - hw/core/nebula/decode_stage.sv
-      - hw/core/nebula/imm_gen.sv
-      - hw/core/nebula/supernova_pkg.sv
       - hw/core/nebula/reg_file.sv
+      - hw/core/nebula/supernova_pkg.sv
+      - hw/core/nebula/imm_gen.sv
       - tb/core/nebula/integration/tb_decode_stage.cpp
       - tb/core/nebula/include/testbench.hpp
       execute_stage:
@@ -212,15 +219,15 @@ targets:
       - hw/core/nebula/datapath.sv
       - hw/core/nebula/fetch_stage.sv
       - hw/core/nebula/pc_reg.sv
+      - hw/core/nebula/writeback_stage.sv
       - hw/core/nebula/supernova_pkg.sv
+      - hw/core/nebula/execute_stage.sv
+      - hw/core/nebula/alu.sv
       - hw/core/nebula/memory_stage.sv
       - hw/core/nebula/lsu.sv
       - hw/core/nebula/decode_stage.sv
-      - hw/core/nebula/imm_gen.sv
       - hw/core/nebula/reg_file.sv
-      - hw/core/nebula/writeback_stage.sv
-      - hw/core/nebula/execute_stage.sv
-      - hw/core/nebula/alu.sv
+      - hw/core/nebula/imm_gen.sv
       - tb/core/nebula/integration/tb_datapath.cpp
       - tb/core/nebula/include/testbench.hpp
       fetch_stage:
