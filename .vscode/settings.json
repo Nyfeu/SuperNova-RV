@@ -1,0 +1,23 @@
+{
+    "files.exclude": {
+        "**/*_quarentena": true
+    },
+    "search.exclude": {
+        "**/*_quarentena": true
+    },
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/tb/core/nebula/include",
+        "${workspaceFolder}/tb/core/protostar/include",
+        "${workspaceFolder}/tb/perips/include",
+        "${workspaceFolder}/tb/soc/include"
+    ],
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": "\\.(sv|v|svh|cpp)$",
+                "isAsync": true,
+                "cmd": "${workspaceFolder}/.venv/bin/python ${workspaceFolder}/scripts/gera_deps.py"
+            }
+        ]
+    }
+}
