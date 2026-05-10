@@ -22,11 +22,13 @@ module datapath #(
     output logic [31:0] dmem_addr_o,
     output logic [31:0] dmem_wdata_o,
     output logic [ 3:0] dmem_be_o,
+    output logic        dmem_we_o,
     input  logic [31:0] dmem_rdata_i,
 
     // Control Unit Signals (Inputs to Datapath)
     input logic stall_i,
-    input logic branch_valid_i,
+    input logic is_branch_i,
+    input logic is_jump_i,
     input logic jalr_sel_i,
 
     // Decode Control
@@ -47,11 +49,9 @@ module datapath #(
     input supernova_pkg::wb_src_e wb_src_i,
 
     // Outputs to BU and Control Unit
-    output logic [31:0] rs1_data_o,
-    output logic [31:0] rs2_data_o,
-    output logic [ 6:0] opcode_o,
-    output logic [ 2:0] funct3_o,
-    output logic        funct7_5_o
+    output logic [6:0] opcode_o,
+    output logic [2:0] funct3_o,
+    output logic       funct7_5_o
 );
 
   import supernova_pkg::*;
@@ -65,7 +65,7 @@ module datapath #(
   mem_wb_t mem_wb_reg, mem_wb_next;
 
   // ========================================================
-  // INTERNAL WIRES 
+  // INTERNAL WIRES
   // ========================================================
   logic [31:0] fetch_pc, fetch_pc_next, fetch_instr;
   logic [31:0] branch_target;
@@ -80,6 +80,33 @@ module datapath #(
   logic [31:0] wb_final_data;
 
   // ========================================================
+  // HAZARD DETECTION UNIT (Load-Use Hazard)
+  // ========================================================
+  logic load_use_hazard;
+  logic pipeline_stall;
+  logic [4:0] if_id_rs1;
+  logic [4:0] if_id_rs2;
+
+  assign if_id_rs1 = if_id_reg.instr[19:15];
+  assign if_id_rs2 = if_id_reg.instr[24:20];
+
+  always_comb begin
+    load_use_hazard = 1'b0;
+    // Se a instrução no EX for um LOAD (lê da memória e escreve no registrador)
+    if (id_ex_reg.ctrl.reg_we && (id_ex_reg.ctrl.wb_src == WbSrcMem)) begin
+      // Se o destino desse Load for exigido pela instrução logo atrás no ID
+      if ((id_ex_reg.rd_addr == if_id_rs1) || (id_ex_reg.rd_addr == if_id_rs2)) begin
+        if (id_ex_reg.rd_addr != 5'd0) begin
+          load_use_hazard = 1'b1;  // Detectou! O pipeline precisa parar 1 ciclo.
+        end
+      end
+    end
+  end
+
+  // O stall da pipeline é ativado externamente OU pelo Load-Use
+  assign pipeline_stall = stall_i | load_use_hazard;
+
+  // ========================================================
   // PIPELINE REGISTER INFERENCE
   // ========================================================
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -88,10 +115,21 @@ module datapath #(
       id_ex_reg  <= '0;
       ex_mem_reg <= '0;
       mem_wb_reg <= '0;
+    end else if (branch_valid_ex) begin
+      // FLUSH! O salto foi tomado. Limpa as instruções que foram buscadas por engano.
+      if_id_reg  <= '0;
+      id_ex_reg  <= '0;
+      ex_mem_reg <= ex_mem_next;
+      mem_wb_reg <= mem_wb_next;
+    end else if (pipeline_stall) begin
+      // STALL! Congela o Fetch/Decode e injeta uma bolha no Execute
+      if_id_reg  <= if_id_reg;  // Mantém a instrução presa no Decode
+      id_ex_reg  <= '0;  // Injeta BUBBLE (NOP) no estágio Execute
+      ex_mem_reg <= ex_mem_next;
+      mem_wb_reg <= mem_wb_next;
     end else begin
-      if (!stall_i) begin
-        if_id_reg <= if_id_next;
-      end
+      // Fluxo Normal
+      if_id_reg  <= if_id_next;
       id_ex_reg  <= id_ex_next;
       ex_mem_reg <= ex_mem_next;
       mem_wb_reg <= mem_wb_next;
@@ -107,9 +145,6 @@ module datapath #(
   assign funct7_5_o = if_id_reg.instr[30];
 
   // A Branch Unit externa avalia os dados já no estágio EX
-  assign rs1_data_o = id_ex_reg.rs1_data;
-  assign rs2_data_o = id_ex_reg.rs2_data;
-
   assign branch_target = id_ex_reg.ctrl.jalr_sel ? exec_jalr_addr : exec_target_addr;
 
   // ========================================================
@@ -120,8 +155,8 @@ module datapath #(
   ) u_fetch_stage (
       .clk_i          (clk_i),
       .rst_ni         (rst_ni),
-      .stall_i        (stall_i),
-      .branch_valid_i (branch_valid_i),
+      .stall_i        (pipeline_stall),
+      .branch_valid_i (branch_valid_ex),
       .branch_target_i(branch_target),
 
       .instr_addr_o (instr_addr_o),
@@ -173,6 +208,9 @@ module datapath #(
   assign id_ex_next.ctrl.alu_src_b    = alu_src_b_i;
   assign id_ex_next.ctrl.alu_op       = alu_op_i;
   assign id_ex_next.ctrl.jalr_sel     = jalr_sel_i;
+  assign id_ex_next.ctrl.is_branch    = is_branch_i;
+  assign id_ex_next.ctrl.is_jump      = is_jump_i;
+  assign id_ex_next.funct3            = if_id_reg.instr[14:12];
 
   // ========================================================
   // FORWARDING & HAZARD RESOLUTION (Intercepta os dados antes do EX)
@@ -192,11 +230,11 @@ module datapath #(
   );
 
   assign alu_mux_a_out = (forward_a == 2'b10) ? ex_mem_reg.alu_result :
-                         (forward_a == 2'b01) ? wb_final_data : 
+                         (forward_a == 2'b01) ? wb_final_data :
                                                 id_ex_reg.rs1_data;
 
   assign alu_mux_b_out = (forward_b == 2'b10) ? ex_mem_reg.alu_result :
-                         (forward_b == 2'b01) ? wb_final_data : 
+                         (forward_b == 2'b01) ? wb_final_data :
                                                 id_ex_reg.rs2_data;
 
   // ========================================================
@@ -223,6 +261,20 @@ module datapath #(
   assign ex_mem_next.rd_addr    = id_ex_reg.rd_addr;
   assign ex_mem_next.ctrl       = id_ex_reg.ctrl;
 
+  logic branch_taken_ex;
+  logic branch_valid_ex;
+
+  branch_unit u_branch_unit (
+      .rs1_data_i    (alu_mux_a_out),             // Usa o dado COM forwarding
+      .rs2_data_i    (alu_mux_b_out),             // Usa o dado COM forwarding
+      .is_branch_i   (id_ex_reg.ctrl.is_branch),  // Sinal viajou pelo pipeline
+      .funct3_i      (id_ex_reg.funct3),          // Funct3 viajou pelo pipeline
+      .branch_taken_o(branch_taken_ex)
+  );
+
+  // A decisão final de salto é tomada AQUI, no estágio EX
+  assign branch_valid_ex = branch_taken_ex || id_ex_reg.ctrl.is_jump;
+
   // ========================================================
   // STAGE 4: MEMORY
   // ========================================================
@@ -247,6 +299,7 @@ module datapath #(
   assign mem_wb_next.pc_plus_4  = ex_mem_reg.pc_plus_4;
   assign mem_wb_next.rd_addr    = ex_mem_reg.rd_addr;
   assign mem_wb_next.ctrl       = ex_mem_reg.ctrl;
+  assign dmem_we_o              = ex_mem_reg.ctrl.mem_we;
 
   // ========================================================
   // STAGE 5: WRITE-BACK
