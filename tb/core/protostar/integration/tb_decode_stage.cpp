@@ -182,8 +182,15 @@ int main(int argc, char **argv)
             fuzz_failures++;
         }
 
+        // Determina os valores esperados simulando o multiplexador combinacional do Verilog
+        uint32_t expected_rs1 = (rs1_addr == 0) ? 0 : (we && rand_wb_addr == rs1_addr) ? rand_data
+                                                                                       : golden_reg_file[rs1_addr];
+
+        uint32_t expected_rs2 = (rs2_addr == 0) ? 0 : (we && rand_wb_addr == rs2_addr) ? rand_data
+                                                                                       : golden_reg_file[rs2_addr];
+
         // Checa RegFile Read
-        if (tb.dut->rs1_data_o != golden_reg_file[rs1_addr] || tb.dut->rs2_data_o != golden_reg_file[rs2_addr])
+        if (tb.dut->rs1_data_o != expected_rs1 || tb.dut->rs2_data_o != expected_rs2)
         {
             std::cerr << "  \033[1;31m❌\033[0m Fuzzing failed: RegFile Read mismatch at iter " << i << std::endl;
             fuzz_failures++;

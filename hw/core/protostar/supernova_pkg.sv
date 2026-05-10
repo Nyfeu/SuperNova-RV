@@ -121,6 +121,8 @@ package supernova_pkg;
     alu_src_b_e alu_src_b;
     alu_op_e    alu_op;
     logic       jalr_sel;
+    logic       is_branch;
+    logic       is_jump;
 
   } ctrl_bus_t;
 
@@ -150,6 +152,9 @@ package supernova_pkg;
     logic [4:0]  rs1_addr;   // It's useful for the future Forwarding Unit
     logic [4:0]  rs2_addr;   // It's useful for the future Forwarding Unit
     logic [4:0]  rd_addr;
+
+    // Funct3 for the Branch Unit to decide the type of comparison (beq, bne, blt, etc.)
+    logic [2:0] funct3;
 
     // The control signals are generated in the Decode stage and need to be passed to the Execute stage
     ctrl_bus_t ctrl;
