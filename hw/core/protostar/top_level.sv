@@ -36,29 +36,24 @@ module top_level #(
   // FIOS INTERNOS (Cérebro <-> Músculos)
   // ========================================================
   // Fios de Feedback (Datapath -> Controlpath)
-  logic       [ 6:0] opcode;
-  logic       [ 2:0] funct3;
-  logic              funct7_5;
-
-  logic       [31:0] rs1_data;
-  logic       [31:0] rs2_data;
+  logic       [6:0] opcode;
+  logic       [2:0] funct3;
+  logic             funct7_5;
 
   // Fios de Controle (Controlpath -> Datapath)
-  logic              stall;
-  logic              branch_valid;
-  logic              jalr_sel;
-  logic              reg_we;
-  imm_type_e         imm_type;
-  alu_src_a_e        alu_src_a;
-  alu_src_b_e        alu_src_b;
-  alu_op_e           alu_op;
-  logic              mem_we;
-  mem_size_e         mem_size;
-  logic              mem_unsigned;
-  wb_src_e           wb_src;
-
-  // Exportar o Write Enable do Controlpath para fora do Top Level
-  assign dmem_we_o = mem_we;
+  logic             stall;
+  logic             is_branch;
+  logic             is_jump;
+  logic             jalr_sel;
+  logic             reg_we;
+  imm_type_e        imm_type;
+  alu_src_a_e       alu_src_a;
+  alu_src_b_e       alu_src_b;
+  alu_op_e          alu_op;
+  logic             mem_we;
+  mem_size_e        mem_size;
+  logic             mem_unsigned;
+  wb_src_e          wb_src;
 
   // ========================================================
   // MÚSCULOS: DATAPATH
@@ -75,11 +70,13 @@ module top_level #(
       .dmem_addr_o  (dmem_addr_o),
       .dmem_wdata_o (dmem_wdata_o),
       .dmem_be_o    (dmem_be_o),
+      .dmem_we_o    (dmem_we_o),
       .dmem_rdata_i (dmem_rdata_i),
 
       // Sinais de Controle (Entradas)
       .stall_i       (stall),
-      .branch_valid_i(branch_valid),
+      .is_branch_i   (is_branch),
+      .is_jump_i     (is_jump),
       .jalr_sel_i    (jalr_sel),
       .reg_we_i      (reg_we),
       .imm_type_i    (imm_type),
@@ -92,8 +89,6 @@ module top_level #(
       .wb_src_i      (wb_src),
 
       // Sinais de Feedback (Saídas)
-      .rs1_data_o(rs1_data),
-      .rs2_data_o(rs2_data),
       .opcode_o  (opcode),
       .funct3_o  (funct3),
       .funct7_5_o(funct7_5)
@@ -108,12 +103,10 @@ module top_level #(
       .funct3_i  (funct3),
       .funct7_5_i(funct7_5),
 
-      .rs1_data_i(rs1_data),
-      .rs2_data_i(rs2_data),
-
       // Controle (Saídas)
       .stall_o       (stall),
-      .branch_valid_o(branch_valid),
+      .is_branch_o   (is_branch),
+      .is_jump_o     (is_jump),
       .jalr_sel_o    (jalr_sel),
       .reg_we_o      (reg_we),
       .imm_type_o    (imm_type),
