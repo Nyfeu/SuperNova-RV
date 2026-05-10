@@ -60,11 +60,12 @@ int main(int argc, char **argv)
 
     std::cout << "\n==> Starting Decode Stage verification..." << std::endl;
 
-    // Inicialização segura
+    // Inicialização segura com as novas portas do Write-Back
     tb.dut->clk_i = 0;
-    tb.dut->reg_we_i = 0;
     tb.dut->instr_payload_i = 0;
-    tb.dut->rd_data_i = 0;
+    tb.dut->wb_rd_addr_i = 0;
+    tb.dut->wb_rd_data_i = 0;
+    tb.dut->wb_reg_we_i = 0;
     tb.eval();
 
     // --------------------------------------------------------
@@ -74,7 +75,7 @@ int main(int argc, char **argv)
 
     // Instrução Fictícia para teste de extração: 0x80508093 (ADDI x1, x1, -2043)
     uint32_t test_instr = 0x80508093;
-    tb.dut->instr_payload_i = test_instr >> 7; // CORREÇÃO AQUI
+    tb.dut->instr_payload_i = test_instr >> 7;
     tb.dut->imm_type_i = ImmI;
     tb.eval();
 
@@ -94,19 +95,19 @@ int main(int argc, char **argv)
     std::cout << "\n--- Directed Tests: RegFile Integration ---" << std::endl;
 
     // Queremos escrever 0xDEADBEEF no registrador x5 (rd = 5)
-    // instr[11:7] = 5 -> (5 << 7) = 0x00000280
-    tb.dut->instr_payload_i = 0x00000280 >> 7; // CORREÇÃO AQUI
-    tb.dut->rd_data_i = 0xDEADBEEF;
-    tb.dut->reg_we_i = 1;
+    // Não precisamos mais forçar o payload! Basta usar o barramento de WB direto.
+    tb.dut->wb_rd_addr_i = 5;
+    tb.dut->wb_rd_data_i = 0xDEADBEEF;
+    tb.dut->wb_reg_we_i = 1;
     tb.tick(); // Borda de subida do clock! Escrita ocorre aqui.
 
     // Atualiza o Golden Model
     golden_reg_file[5] = 0xDEADBEEF;
 
     // Agora vamos ler o x5 colocando-o na porta rs1 (instr[19:15] = 5 -> 5 << 15 = 0x00028000)
-    tb.dut->reg_we_i = 0;                      // Desliga a escrita
-    tb.dut->instr_payload_i = 0x00028000 >> 7; // CORREÇÃO AQUI
-    tb.eval();                                 // Combinacional, o dado deve aparecer na saída imediatamente
+    tb.dut->wb_reg_we_i = 0; // Desliga a escrita
+    tb.dut->instr_payload_i = 0x00028000 >> 7;
+    tb.eval(); // Combinacional, o dado deve aparecer na saída imediatamente
 
     if (tb.dut->rs1_data_o == golden_reg_file[5])
     {
@@ -119,12 +120,13 @@ int main(int argc, char **argv)
     }
 
     // Testando a proteção do Registrador Zero (x0)
-    tb.dut->instr_payload_i = 0x00000000 >> 7; // CORREÇÃO AQUI
-    tb.dut->rd_data_i = 0xFFFFFFFF;
-    tb.dut->reg_we_i = 1;
+    tb.dut->wb_rd_addr_i = 0;
+    tb.dut->wb_rd_data_i = 0xFFFFFFFF;
+    tb.dut->wb_reg_we_i = 1;
     tb.tick();
 
-    tb.dut->reg_we_i = 0;
+    tb.dut->wb_reg_we_i = 0;
+    tb.dut->instr_payload_i = 0; // Tenta ler x0 em rs1 e rs2
     tb.eval();
 
     if (tb.dut->rs1_data_o == 0 && tb.dut->rs2_data_o == 0)
@@ -144,6 +146,7 @@ int main(int argc, char **argv)
     std::mt19937 rng(42);
     std::uniform_int_distribution<uint32_t> dist_32(0, 0xFFFFFFFF);
     std::uniform_int_distribution<int> dist_type(0, 4);
+    std::uniform_int_distribution<int> dist_reg(0, 31);
     std::uniform_int_distribution<int> dist_bool(0, 1);
 
     const int NUM_FUZZ_TESTS = 10000;
@@ -153,19 +156,20 @@ int main(int argc, char **argv)
     {
         uint32_t rand_instr = dist_32(rng);
         uint32_t rand_data = dist_32(rng);
+        uint32_t rand_wb_addr = dist_reg(rng); // Simula uma instrução terminando no pipeline
         bool we = dist_bool(rng);
         ImmType type = static_cast<ImmType>(dist_type(rng));
 
         // 1. Aplica as entradas
-        tb.dut->instr_payload_i = rand_instr >> 7; // CORREÇÃO AQUI
-        tb.dut->rd_data_i = rand_data;
-        tb.dut->reg_we_i = we;
+        tb.dut->instr_payload_i = rand_instr >> 7;
+        tb.dut->wb_rd_addr_i = rand_wb_addr;
+        tb.dut->wb_rd_data_i = rand_data;
+        tb.dut->wb_reg_we_i = we;
         tb.dut->imm_type_i = type;
 
         // 2. Extrai os endereços para o C++ saber o que verificar
         uint32_t rs1_addr = (rand_instr >> 15) & 0x1F;
         uint32_t rs2_addr = (rand_instr >> 20) & 0x1F;
-        uint32_t rd_addr = (rand_instr >> 7) & 0x1F;
 
         // 3. Avalia as leituras combinacionais (Ocorre antes da borda do clock)
         tb.eval();
@@ -178,8 +182,15 @@ int main(int argc, char **argv)
             fuzz_failures++;
         }
 
+        // Determina os valores esperados simulando o multiplexador combinacional do Verilog
+        uint32_t expected_rs1 = (rs1_addr == 0) ? 0 : (we && rand_wb_addr == rs1_addr) ? rand_data
+                                                                                       : golden_reg_file[rs1_addr];
+
+        uint32_t expected_rs2 = (rs2_addr == 0) ? 0 : (we && rand_wb_addr == rs2_addr) ? rand_data
+                                                                                       : golden_reg_file[rs2_addr];
+
         // Checa RegFile Read
-        if (tb.dut->rs1_data_o != golden_reg_file[rs1_addr] || tb.dut->rs2_data_o != golden_reg_file[rs2_addr])
+        if (tb.dut->rs1_data_o != expected_rs1 || tb.dut->rs2_data_o != expected_rs2)
         {
             std::cerr << "  \033[1;31m❌\033[0m Fuzzing failed: RegFile Read mismatch at iter " << i << std::endl;
             fuzz_failures++;
@@ -189,9 +200,9 @@ int main(int argc, char **argv)
         tb.tick();
 
         // Atualiza o Golden Model se 'we' for verdadeiro e não for o registrador x0
-        if (we && rd_addr != 0)
+        if (we && rand_wb_addr != 0)
         {
-            golden_reg_file[rd_addr] = rand_data;
+            golden_reg_file[rand_wb_addr] = rand_data;
         }
 
         if (fuzz_failures > 5)
