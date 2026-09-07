@@ -9,8 +9,6 @@ obj_dir/
 
 # OS / Editor
 .DS_Store
-.vscode/
-!.vscode/settings.json
 
 # Verilator / Build artefacts
 obj_dir/
