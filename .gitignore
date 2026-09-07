@@ -16,3 +16,6 @@ build.log
 dump.vcd
 traces/
 riscv-isa-sim/
+
+# MkDocs (saída de build; o site é publicado na branch gh-pages)
+site/

@@ -1,3 +1,6 @@
 sw/compliance/** linguist-vendored
 build/** linguist-generated
 traces/** linguist-generated
+site/** linguist-generated
+docs/** linguist-documentation
+*.sv linguist-language=SystemVerilog
