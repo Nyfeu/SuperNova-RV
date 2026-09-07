@@ -244,31 +244,5 @@ Topologia *fail-fast* acionada em *pushes* e *pull requests* para `main`:
 
 ## 📚 Documentação
 
-A documentação detalha a arquitetura, cada módulo RTL e as decisões de design:
+A documentação detalha a arquitetura, cada módulo RTL e as decisões de design. Acesse pelo link: [Documentação](https://nyfeu.github.io/SuperNova-RV/)
 
-- **Hardware** — [Top Level](docs/hw/top_level.md) · [Datapath](docs/hw/datapath.md) ·
-  [Controlpath](docs/hw/controlpath.md)
-- **Estágios** — [Fetch](docs/hw/stages/fetch_stage.md) · [Decode](docs/hw/stages/decode_stage.md) ·
-  [Execute](docs/hw/stages/execute_stage.md) · [Memory](docs/hw/stages/memory_stage.md) ·
-  [Write-Back](docs/hw/stages/writeback_stage.md)
-- **Componentes** — [ALU](docs/hw/core/alu.md) · [Register File](docs/hw/core/reg_file.md) ·
-  [Immediate Generator](docs/hw/core/imm_gen.md) · [Instruction Decoder](docs/hw/core/instr_decoder.md) ·
-  [Branch Unit](docs/hw/core/branch_unit.md) · [Load/Store Unit](docs/hw/core/lsu.md)
-- **DevOps** — [Ambiente de Desenvolvimento](docs/devops/env.md) ·
-  [Verificação e CI](docs/devops/verification.md)
-
-Para navegar com busca e renderização completa, sirva o site localmente dentro do DevContainer:
-
-```bash
-mkdocs serve -a 0.0.0.0:8000
-```
-
-Acesse então <http://localhost:8000>.
-
----
-
-<div align="center">
-
-*"Assim como estrelas, processadores nascem de nuvens de complexidade e colapsam em elegância."*
-
-</div>
