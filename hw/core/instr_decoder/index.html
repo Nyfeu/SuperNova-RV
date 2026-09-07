@@ -1,0 +1,1945 @@
+
+<!doctype html>
+<html lang="pt" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Custom RISC-V Processor">
+      
+      
+      
+        <link rel="canonical" href="https://nyfeu.github.io/SuperNova-RV/hw/core/instr_decoder/">
+      
+      
+        <link rel="prev" href="../imm_gen/">
+      
+      
+        <link rel="next" href="../lsu/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Instruction Decoder - SuperNova-RV</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#decodificador-de-instrucoes-id" class="md-skip">
+          Pular para conteúdo
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabeçalho">
+    <a href="../../.." title="SuperNova-RV" class="md-header__button md-logo" aria-label="SuperNova-RV" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 17H7V7h10m4 4V9h-2V7a2 2 0 0 0-2-2h-2V3h-2v2h-2V3H9v2H7c-1.11 0-2 .89-2 2v2H3v2h2v2H3v2h2v2a2 2 0 0 0 2 2h2v2h2v-2h2v2h2v-2h2a2 2 0 0 0 2-2v-2h2v-2h-2v-2m-6 2h-2v-2h2m2-2H9v6h6z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SuperNova-RV
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Instruction Decoder
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Buscar" placeholder="Buscar" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Pesquisar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpar" aria-label="Limpar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando busca
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Nyfeu/SuperNova-RV" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Nyfeu/SuperNova-RV
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Abas" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../.." class="md-tabs__link">
+          
+  
+  
+  Introdução
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../top_level/" class="md-tabs__link">
+          
+  
+  
+  Hardware (RV32I)
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../devops/env/" class="md-tabs__link">
+          
+  
+  
+  DevOps & Verificação
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navegação" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="SuperNova-RV" class="md-nav__button md-logo" aria-label="SuperNova-RV" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 17H7V7h10m4 4V9h-2V7a2 2 0 0 0-2-2h-2V3h-2v2h-2V3H9v2H7c-1.11 0-2 .89-2 2v2H3v2h2v2H3v2h2v2a2 2 0 0 0 2 2h2v2h2v-2h2v2h2v-2h2a2 2 0 0 0 2-2v-2h2v-2h-2v-2m-6 2h-2v-2h2m2-2H9v6h6z"/></svg>
+
+    </a>
+    SuperNova-RV
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Nyfeu/SuperNova-RV" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Nyfeu/SuperNova-RV
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introdução
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Introdução
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visão Geral
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../intro/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primeiros Passos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware (RV32I)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware (RV32I)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../top_level/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visão Geral (Top Level)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../datapath/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Datapath
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../controlpath/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controlpath
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Estágios
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Estágios
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stages/fetch_stage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fetch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stages/decode_stage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decode
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stages/execute_stage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Execute
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stages/memory_stage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stages/writeback_stage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writeback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Componentes Internos (Core)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Componentes Internos (Core)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../alu/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ALU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../branch_unit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Branch Unit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../imm_gen/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Immediate Generator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instruction Decoder
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instruction Decoder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Contexto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Interface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-sinais-de-entradasaida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1. Sinais de Entrada/Saída
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-descricao-dos-sinais-de-controle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. Descrição dos Sinais de Controle
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-estrategia-de-decodificacao-e-tabela-de-verdade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Estratégia de Decodificação e Tabela de Verdade
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Estratégia de Decodificação e Tabela de Verdade">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-detalhes-dos-tipos-de-instrucao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1. Detalhes dos Tipos de Instrução
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-operacoes-decodificadas-da-alu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Operações Decodificadas da ALU
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Operações Decodificadas da ALU">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-tabela-de-operacoes-alu-para-r-type-e-i-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1. Tabela de Operações ALU (para R-Type e I-Type)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-implementacao-e-consideracoes-de-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Implementação e Considerações de Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Implementação e Considerações de Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-projeto-combinacional-plano" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1. Projeto Combinacional Plano
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-tratamento-de-valores-dont-care" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2. Tratamento de Valores "Don't Care"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-sinalizacao-de-erros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3. Sinalização de Erros
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lsu/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Load/Store Unit (LSU)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reg_file/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Register File
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DevOps & Verificação
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    DevOps & Verificação
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../devops/env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ambiente de Desenvolvimento
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../devops/verification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Verificação e CI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Contexto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Interface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-sinais-de-entradasaida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1. Sinais de Entrada/Saída
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-descricao-dos-sinais-de-controle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. Descrição dos Sinais de Controle
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-estrategia-de-decodificacao-e-tabela-de-verdade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Estratégia de Decodificação e Tabela de Verdade
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Estratégia de Decodificação e Tabela de Verdade">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-detalhes-dos-tipos-de-instrucao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1. Detalhes dos Tipos de Instrução
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-operacoes-decodificadas-da-alu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Operações Decodificadas da ALU
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Operações Decodificadas da ALU">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-tabela-de-operacoes-alu-para-r-type-e-i-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1. Tabela de Operações ALU (para R-Type e I-Type)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-implementacao-e-consideracoes-de-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Implementação e Considerações de Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Implementação e Considerações de Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-projeto-combinacional-plano" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1. Projeto Combinacional Plano
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-tratamento-de-valores-dont-care" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2. Tratamento de Valores "Don't Care"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-sinalizacao-de-erros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3. Sinalização de Erros
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="decodificador-de-instrucoes-id">Decodificador de Instruções (ID)</h1>
+<h2 id="1-contexto">1. Contexto</h2>
+<p>O Decodificador de Instruções é o núcleo do Caminho de Controle (Control Path) na arquitetura SuperNova-RV. É um módulo puramente combinacional que implementa uma estratégia de decodificação em "projeto plano" (flat design). Em vez de depender de múltiplos decodificadores hierárquicos (como um decodificador principal seguido por um decodificador de ALU), ele lê os campos <code>Opcode</code>, <code>Funct3</code> e <code>Funct7</code> simultaneamente para gerar todos os sinais de controle fortemente tipados em um único estágio. Essa abordagem achata o caminho crítico e reduz a latência.</p>
+<p>A arquitetura segue o conjunto de instruções base RV32I (RISC-V 32-bit Integer) conforme especificado na ISA RISC-V, garantindo compatibilidade com software padrão dessa plataforma.</p>
+<h2 id="2-interface">2. Interface</h2>
+<h3 id="21-sinais-de-entradasaida">2.1. Sinais de Entrada/Saída</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Nome do Sinal</th>
+<th style="text-align: left;">Direção</th>
+<th style="text-align: left;">Largura/Tipo</th>
+<th style="text-align: left;">Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>instr_i</code></td>
+<td style="text-align: left;">Entrada</td>
+<td style="text-align: left;">32 bits</td>
+<td style="text-align: left;">A instrução bruta de 32 bits obtida da memória.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>reg_we_o</code></td>
+<td style="text-align: left;">Saída</td>
+<td style="text-align: left;">1 bit</td>
+<td style="text-align: left;">Habilitação de Escrita no Arquivo de Registradores (Register File Write Enable).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>imm_type_o</code></td>
+<td style="text-align: left;">Saída</td>
+<td style="text-align: left;"><code>imm_type_e</code></td>
+<td style="text-align: left;">Seletor de formato para o Gerador de Imediato (Immediate Generator).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>alu_src_a_o</code></td>
+<td style="text-align: left;">Saída</td>
+<td style="text-align: left;"><code>alu_src_a_e</code></td>
+<td style="text-align: left;">Seleciona o primeiro operando da ALU (Rs1, PC ou Zero).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>alu_src_b_o</code></td>
+<td style="text-align: left;">Saída</td>
+<td style="text-align: left;"><code>alu_src_b_e</code></td>
+<td style="text-align: left;">Seleciona o segundo operando da ALU (Rs2 ou Imediato).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>alu_op_o</code></td>
+<td style="text-align: left;">Saída</td>
+<td style="text-align: left;"><code>alu_op_e</code></td>
+<td style="text-align: left;">Código de operação específica para a ALU.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mem_we_o</code></td>
+<td style="text-align: left;">Saída</td>
+<td style="text-align: left;">1 bit</td>
+<td style="text-align: left;">Habilitação de Escrita na Memória de Dados (Store).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mem_size_o</code></td>
+<td style="text-align: left;">Saída</td>
+<td style="text-align: left;"><code>mem_size_e</code></td>
+<td style="text-align: left;">Tamanho de acesso à Memória de Dados (Byte, Half-word, Word).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mem_unsigned_o</code></td>
+<td style="text-align: left;">Saída</td>
+<td style="text-align: left;">1 bit</td>
+<td style="text-align: left;">Sinalizador de extensão com zeros para Carregamentos (Loads).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>wb_src_o</code></td>
+<td style="text-align: left;">Saída</td>
+<td style="text-align: left;"><code>wb_src_e</code></td>
+<td style="text-align: left;">Seleciona a fonte de dados para escrita no Arquivo de Registradores (Write-back).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>is_branch_o</code></td>
+<td style="text-align: left;">Saída</td>
+<td style="text-align: left;">1 bit</td>
+<td style="text-align: left;">Indica se a instrução é um desvio condicional (B-Type).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>is_jump_o</code></td>
+<td style="text-align: left;">Saída</td>
+<td style="text-align: left;">1 bit</td>
+<td style="text-align: left;">Indica se a instrução é um salto incondicional (JAL / JALR).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-descricao-dos-sinais-de-controle">2.2. Descrição dos Sinais de Controle</h3>
+<ul>
+<li><strong><code>reg_we_o</code></strong>: Habilita a escrita do resultado no registrador de destino (Rd).</li>
+<li><strong><code>imm_type_o</code></strong>: Define o tipo de imediato que será gerado (I, S, B, U ou J) para estar disponível na próxima etapa.</li>
+<li><strong><code>alu_src_a_o</code> / <code>alu_src_b_o</code></strong>: Controlam os multiplexadores de entrada da ALU, selecionando a origem de cada operando.</li>
+<li><strong><code>alu_op_o</code></strong>: Especifica a operação aritmética ou lógica a ser realizada (Add, Sub, AND, OR, XOR, SLL, SRL, SRA, etc.).</li>
+<li><strong><code>mem_we_o</code></strong>: Indica que uma operação de escrita em memória (Store) será executada.</li>
+<li><strong><code>mem_size_o</code></strong>: Define se o acesso é de 8 bits (byte), 16 bits (half-word) ou 32 bits (word).</li>
+<li><strong><code>mem_unsigned_o</code></strong>: Quando alto, carregamentos são zero-extended; quando baixo, são sign-extended.</li>
+<li><strong><code>wb_src_o</code></strong>: Seleciona a origem do dado a ser escrito: resultado da ALU, dado da memória, ou PC+4.</li>
+<li><strong><code>is_branch_o</code> / <code>is_jump_o</code></strong>: Sinalizam instruções de controle de fluxo para que o núcleo execute a resolução de desvios apropriada.</li>
+</ul>
+<h2 id="3-estrategia-de-decodificacao-e-tabela-de-verdade">3. Estratégia de Decodificação e Tabela de Verdade</h2>
+<p>O decodificador mapeia a instrução para os sinais de controle baseado nos opcodes base do RV32I.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Categoria de Instrução</th>
+<th style="text-align: left;">Opcode</th>
+<th style="text-align: left;"><code>reg_we</code></th>
+<th style="text-align: left;"><code>imm_type</code></th>
+<th style="text-align: left;"><code>alu_src_a</code></th>
+<th style="text-align: left;"><code>alu_src_b</code></th>
+<th style="text-align: left;"><code>alu_op</code></th>
+<th style="text-align: left;"><code>mem_we</code></th>
+<th style="text-align: left;"><code>wb_src</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>R-Type</strong></td>
+<td style="text-align: left;"><code>0110011</code></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">X</td>
+<td style="text-align: left;"><code>Rs1</code></td>
+<td style="text-align: left;"><code>Rs2</code></td>
+<td style="text-align: left;"><em>Decodificado</em></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><code>Alu</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>I-Type (ALU)</strong></td>
+<td style="text-align: left;"><code>0010011</code></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;"><code>ImmI</code></td>
+<td style="text-align: left;"><code>Rs1</code></td>
+<td style="text-align: left;"><code>Imm</code></td>
+<td style="text-align: left;"><em>Decodificado</em></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><code>Alu</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Load</strong></td>
+<td style="text-align: left;"><code>0000011</code></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;"><code>ImmI</code></td>
+<td style="text-align: left;"><code>Rs1</code></td>
+<td style="text-align: left;"><code>Imm</code></td>
+<td style="text-align: left;"><code>AluAdd</code></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><code>Mem</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Store</strong></td>
+<td style="text-align: left;"><code>0100011</code></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><code>ImmS</code></td>
+<td style="text-align: left;"><code>Rs1</code></td>
+<td style="text-align: left;"><code>Imm</code></td>
+<td style="text-align: left;"><code>AluAdd</code></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">X</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Branch</strong></td>
+<td style="text-align: left;"><code>1100011</code></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><code>ImmB</code></td>
+<td style="text-align: left;"><code>Rs1</code></td>
+<td style="text-align: left;"><code>Rs2</code></td>
+<td style="text-align: left;"><code>AluAdd</code> (*)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">X</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>JAL</strong></td>
+<td style="text-align: left;"><code>1101111</code></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;"><code>ImmJ</code></td>
+<td style="text-align: left;"><code>Pc</code></td>
+<td style="text-align: left;"><code>Imm</code></td>
+<td style="text-align: left;"><code>AluAdd</code></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><code>Pc</code> (**)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>JALR</strong></td>
+<td style="text-align: left;"><code>1100111</code></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;"><code>ImmI</code></td>
+<td style="text-align: left;"><code>Rs1</code></td>
+<td style="text-align: left;"><code>Imm</code></td>
+<td style="text-align: left;"><code>AluAdd</code></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><code>Pc</code> (**)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>LUI</strong></td>
+<td style="text-align: left;"><code>0110111</code></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;"><code>ImmU</code></td>
+<td style="text-align: left;"><code>Zero</code></td>
+<td style="text-align: left;"><code>Imm</code></td>
+<td style="text-align: left;"><code>AluAdd</code></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><code>Alu</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>AUIPC</strong></td>
+<td style="text-align: left;"><code>0010111</code></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;"><code>ImmU</code></td>
+<td style="text-align: left;"><code>Pc</code></td>
+<td style="text-align: left;"><code>Imm</code></td>
+<td style="text-align: left;"><code>AluAdd</code></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><code>Alu</code></td>
+</tr>
+</tbody>
+</table>
+<p><em>(X indica um valor "Don't Care", normalmente fixado em valores padrão para evitar latches).</em><br />
+<em>( * ) Desvios utilizam uma Unidade de Desvios dedicada no controle de nível superior; a ALU pode calcular endereços alvo ou permanecer inativa.</em><br />
+<em>( ** ) Saltos escrevem PC+4 no registrador de destino, portanto <code>wb_src</code> roteia o registrador PC do pipeline.</em></p>
+<h3 id="31-detalhes-dos-tipos-de-instrucao">3.1. Detalhes dos Tipos de Instrução</h3>
+<ul>
+<li><strong>R-Type</strong>: Operações entre registradores (ex: ADD, SUB, AND, OR). Todos os operandos vêm de registradores.</li>
+<li><strong>I-Type</strong>: Operações imediatas e carregamentos (ex: ADDI, LW, LH). Um operando é um registrador, o outro é um imediato de 12 bits.</li>
+<li><strong>S-Type</strong>: Armazenamentos em memória (ex: SW, SH, SB). Os operandos são um registrador e um imediato para offset.</li>
+<li><strong>B-Type</strong>: Desvios condicionais (ex: BEQ, BNE, BLT). Comparam dois registradores e fazem salto baseado em imediato.</li>
+<li><strong>U-Type</strong>: Instruções com imediato de 20 bits (ex: LUI, AUIPC). Carregam valor imediato em bits superiores.</li>
+<li><strong>J-Type</strong>: Saltos incondicionais (JAL). Carregam o endereço de retorno em um registrador.</li>
+</ul>
+<h2 id="4-operacoes-decodificadas-da-alu">4. Operações Decodificadas da ALU</h2>
+<p>Para instruções <code>R-Type</code> e <code>I-Type</code>, o <code>alu_op_o</code> é derivado analisando <code>Funct3</code> (bits 14:12) e, quando necessário, <code>Funct7</code> (bit 30, que distingue ADD/SUB e SRL/SRA). Para todas as instruções de memória, PC-relativas e de salto, a ALU é forçada para <code>AluAdd</code> para calcular endereços de memória ou PCs alvo.</p>
+<h3 id="41-tabela-de-operacoes-alu-para-r-type-e-i-type">4.1. Tabela de Operações ALU (para R-Type e I-Type)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Funct3</th>
+<th style="text-align: left;">Funct7 (R-Type)</th>
+<th style="text-align: left;">Operação</th>
+<th style="text-align: left;">Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>000</code></td>
+<td style="text-align: left;"><code>0000000</code></td>
+<td style="text-align: left;">ADD</td>
+<td style="text-align: left;">Adição (Rs1 + Rs2 / Rs1 + Imm)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>000</code></td>
+<td style="text-align: left;"><code>0100000</code></td>
+<td style="text-align: left;">SUB</td>
+<td style="text-align: left;">Subtração (Rs1 - Rs2, apenas R-Type)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>001</code></td>
+<td style="text-align: left;"><code>0000000</code></td>
+<td style="text-align: left;">SLL</td>
+<td style="text-align: left;">Deslocamento lógico à esquerda (Rs1 &lt;&lt; Rs2[4:0] / Rs1 &lt;&lt; Imm[4:0])</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>010</code></td>
+<td style="text-align: left;"><code>0000000</code></td>
+<td style="text-align: left;">SLT</td>
+<td style="text-align: left;">Set Less Than com sinal</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>011</code></td>
+<td style="text-align: left;"><code>0000000</code></td>
+<td style="text-align: left;">SLTU</td>
+<td style="text-align: left;">Set Less Than sem sinal</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>100</code></td>
+<td style="text-align: left;"><code>0000000</code></td>
+<td style="text-align: left;">XOR</td>
+<td style="text-align: left;">Operação XOR lógica</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>101</code></td>
+<td style="text-align: left;"><code>0000000</code></td>
+<td style="text-align: left;">SRL</td>
+<td style="text-align: left;">Deslocamento lógico à direita</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>101</code></td>
+<td style="text-align: left;"><code>0100000</code></td>
+<td style="text-align: left;">SRA</td>
+<td style="text-align: left;">Deslocamento aritmético à direita</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>110</code></td>
+<td style="text-align: left;"><code>0000000</code></td>
+<td style="text-align: left;">OR</td>
+<td style="text-align: left;">Operação OR lógica</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>111</code></td>
+<td style="text-align: left;"><code>0000000</code></td>
+<td style="text-align: left;">AND</td>
+<td style="text-align: left;">Operação AND lógica</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-implementacao-e-consideracoes-de-design">5. Implementação e Considerações de Design</h2>
+<h3 id="51-projeto-combinacional-plano">5.1. Projeto Combinacional Plano</h3>
+<p>O decodificador implementa toda a lógica de decodificação em um único nível combinacional, evitando a necessidade de múltiplos estágios hierárquicos. Isso resulta em:
+- <strong>Menor latência</strong>: Nenhum atraso de propagação entre decodificadores intermediários.
+- <strong>Previsibilidade</strong>: O tempo crítico é bem definido e fácil de otimizar.
+- <strong>Facilidade de depuração</strong>: A lógica é centralizada e transparente.</p>
+<h3 id="52-tratamento-de-valores-dont-care">5.2. Tratamento de Valores "Don't Care"</h3>
+<p>Sinais com valor "X" devem ser sempre fixados em valores padrão conhecidos para evitar comportamentos não determinísticos que possam levar a latches indesejados.</p>
+<h3 id="53-sinalizacao-de-erros">5.3. Sinalização de Erros</h3>
+<p>O decodificador atualmente não sinaliza instruções inválidas explicitamente. Um módulo de detecção de exceções de nível superior é responsável por identificar opcodes não implementados ou instruções malformadas.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Voltar para o topo
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Rodapé" >
+        
+          
+          <a href="../imm_gen/" class="md-footer__link md-footer__link--prev" aria-label="Anterior: Immediate Generator">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Anterior
+              </span>
+              <div class="md-ellipsis">
+                Immediate Generator
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../lsu/" class="md-footer__link md-footer__link--next" aria-label="Próximo: Load/Store Unit (LSU)">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Próximo
+              </span>
+              <div class="md-ellipsis">
+                Load/Store Unit (LSU)
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.footer", "navigation.tracking", "navigation.top", "toc.follow", "content.code.copy", "content.tabs.link", "search.highlight", "search.suggest", "content.tooltips"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "mais 1 nesta p\u00e1gina", "search.result.more.other": "# mais nesta p\u00e1gina", "search.result.none": "Nenhum documento encontrado", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
